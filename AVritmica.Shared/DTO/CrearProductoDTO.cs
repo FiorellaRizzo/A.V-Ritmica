@@ -41,5 +41,7 @@ namespace AVritmica.Shared.DTO
         [Display(Name = "Imágenes de variantes")]
         [MaxLength(2000, ErrorMessage = "Las URLs de imágenes no pueden exceder 2000 caracteres")]
         public string ImagenesVariantes { get; set; } = string.Empty;
+
+        public string StockPorColor { get; set; } = string.Empty;
     }
 }

@@ -32,7 +32,7 @@
             <ValidationMessage For="@(() => producto.Precio)" />
         </div>
         <div class="col-md-6">
-            <label class="form-label">Stock *</label>
+            <label class="form-label">Stock Total *</label>
             <InputNumber @bind-Value="producto.Stock" class="form-control" />
             <ValidationMessage For="@(() => producto.Stock)" />
         </div>
@@ -57,7 +57,7 @@
     </div>
 
     <!-- ============================================= -->
-    <!-- SECCIÓN DE VARIANTES - ESTO ES LO NUEVO -->
+    <!-- SECCIÓN DE VARIANTES -->
     <!-- ============================================= -->
     <div class="card mb-4 border-primary">
         <div class="card-header bg-primary text-white">
@@ -90,7 +90,8 @@
                         <InputTextArea @bind-Value="producto.ColoresDisponibles"
                                        class="form-control"
                                        rows="2"
-                                       placeholder="Ej: Rojo, Azul, Verde, Rosa, Dorado" />
+                                       placeholder="Ej: Rojo, Azul, Verde, Rosa, Dorado"
+                                       @oninput="RecalcularStockPorColor" />
                         <small class="text-muted">Separar cada color con una coma. Ejemplo: "Rojo, Azul, Verde"</small>
                     </div>
 
@@ -156,6 +157,126 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- ============================================= -->
+                    <!-- NUEVA SECCIÓN: STOCK POR COLOR -->
+                    <!-- ============================================= -->
+                    @if (!string.IsNullOrEmpty(producto.ColoresDisponibles))
+                    {
+                        <div class="card mt-4 border-success">
+                            <div class="card-header bg-success text-white">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-boxes me-2"></i>Gestión de Stock por Color
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <strong>Importante:</strong> Aquí defines cuántas unidades hay de cada color.
+                                    El stock total del producto será la suma de todos los colores.
+                                </div>
+
+                                @{
+                                    var coloresLista = producto.ColoresDisponibles
+                                    .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                    .Select(c => c.Trim())
+                                    .ToList();
+                                }
+
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Color</th>
+                                                <th>Stock Disponible</th>
+                                                <th>Estado</th>
+                                                <th>Acción</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var color in coloresLista)
+                                            {
+                                                var stockActual = stockPorColorDic.ContainsKey(color) ? stockPorColorDic[color] : 0;
+                                                var estaAgotado = stockActual <= 0;
+
+                                                <tr>
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="color-circle me-2" style="background-color: @ObtenerColorHex(color)"></div>
+                                                            <strong>@color</strong>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <input type="number"
+                                                               class="form-control form-control-sm"
+                                                               value="@stockActual"
+                                                               @onchange="@(e => ActualizarStockColor(color, e))"
+                                                               min="0"
+                                                               style="width: 100px; display: inline-block;" />
+                                                    </td>
+                                                    <td>
+                                                        @if (estaAgotado)
+                                                        {
+                                                            <span class="badge bg-danger">
+                                                                <i class="fas fa-times-circle me-1"></i>AGOTADO
+                                                            </span>
+                                                        }
+                                                        else if (stockActual < 5)
+                                                        {
+                                                            <span class="badge bg-warning text-dark">
+                                                                <i class="fas fa-exclamation-triangle me-1"></i>ÚLTIMAS (@stockActual)
+                                                            </span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge bg-success">
+                                                                <i class="fas fa-check-circle me-1"></i>DISPONIBLE (@stockActual)
+                                                            </span>
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        <button type="button"
+                                                                class="btn btn-outline-danger btn-sm"
+                                                                @onclick="() => PonerEnCero(color)"
+                                                                title="Poner en 0 (agotado)">
+                                                            <i class="fas fa-ban"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                        <tfoot class="table-secondary">
+                                            <tr>
+                                                <td><strong>TOTAL</strong></td>
+                                                <td>
+                                                    <input type="number"
+                                                           @bind="producto.Stock"
+                                                           class="form-control form-control-sm"
+                                                           style="width: 100px; display: inline-block;"
+                                                           min="0" />
+                                                </td>
+                                                <td colspan="2">
+                                                    <small class="text-muted">
+                                                        Stock total: @producto.Stock unidades
+                                                    </small>
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+
+                                <!-- Botones de ayuda -->
+                                <div class="d-flex gap-2 mt-3">
+                                  
+                                    <button type="button"
+                                            class="btn btn-outline-secondary btn-sm"
+                                            @onclick="CalcularTotalStock">
+                                        <i class="fas fa-calculator me-1"></i>Calcular Total desde Colores
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    }
                 </div>
             }
             else
@@ -176,7 +297,6 @@
             @if (cargando)
             {
                 <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                
             }
             else
             {
@@ -215,6 +335,10 @@
     private string mensajeExito = string.Empty;
     private string Titulo => Id == 0 ? "Nuevo Producto" : "Editar Producto";
 
+    // NUEVAS VARIABLES PARA STOCK POR COLOR
+    private Dictionary<string, int> stockPorColorDic = new Dictionary<string, int>();
+    private Producto? productoExistente = null;
+
     protected override async Task OnInitializedAsync()
     {
         await CargarCategorias();
@@ -228,7 +352,11 @@
             // Valores por defecto para nuevo producto
             producto.Stock = 0;
             producto.Precio = 0;
-            producto.TieneVariantes = false; // Empieza desactivado
+            producto.TieneVariantes = false;
+            producto.ColoresDisponibles = "";
+            producto.TamaniosDisponibles = "";
+            producto.ImagenesVariantes = "";
+            producto.StockPorColor = "";
         }
     }
 
@@ -269,7 +397,9 @@
             var respuesta = await ProductoService.GetProducto(Id);
             if (!respuesta.Error && respuesta.Respuesta != null)
             {
-                var productoExistente = respuesta.Respuesta;
+                productoExistente = respuesta.Respuesta;
+
+                // Cargar datos básicos
                 producto = new CrearProductoDTO
                 {
                     Nombre = productoExistente.Nombre,
@@ -278,12 +408,18 @@
                     Stock = productoExistente.Stock,
                     ImagenUrl = productoExistente.ImagenUrl,
                     CategoriaId = productoExistente.CategoriaId,
-                    // NUEVOS CAMPOS
                     TieneVariantes = productoExistente.TieneVariantes,
                     ColoresDisponibles = productoExistente.ColoresDisponibles ?? "",
                     TamaniosDisponibles = productoExistente.TamaniosDisponibles ?? "",
-                    ImagenesVariantes = productoExistente.ImagenesVariantes ?? ""
+                    ImagenesVariantes = productoExistente.ImagenesVariantes ?? "",
+                    StockPorColor = productoExistente.StockPorColor ?? ""
                 };
+
+                // Cargar stock por color en el diccionario
+                if (productoExistente.TieneVariantes && !string.IsNullOrEmpty(productoExistente.ColoresDisponibles))
+                {
+                    InicializarStockPorColorDic();
+                }
             }
             else
             {
@@ -303,6 +439,154 @@
         StateHasChanged();
     }
 
+    // ========== MÉTODOS CORREGIDOS PARA STOCK POR COLOR ==========
+
+    private void InicializarStockPorColorDic()
+    {
+        stockPorColorDic.Clear();
+
+        // PRIMERO: Intentar cargar desde el string StockPorColor existente
+        if (!string.IsNullOrEmpty(producto.StockPorColor))
+        {
+            var items = producto.StockPorColor.Split(';', StringSplitOptions.RemoveEmptyEntries);
+            foreach (var item in items)
+            {
+                var partes = item.Split(':');
+                if (partes.Length == 2 && int.TryParse(partes[1].Trim(), out int stock))
+                {
+                    stockPorColorDic[partes[0].Trim()] = stock;
+                }
+            }
+        }
+
+        // SEGUNDO: Si no hay datos en el string, pero hay colores configurados, distribuir equitativamente
+        if (stockPorColorDic.Count == 0 && !string.IsNullOrEmpty(producto.ColoresDisponibles))
+        {
+            var colores = producto.ColoresDisponibles
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(c => c.Trim())
+                .ToList();
+
+            if (colores.Count > 0)
+            {
+                int stockPorColor = producto.Stock > 0 ? producto.Stock / colores.Count : 0;
+                foreach (var color in colores)
+                {
+                    stockPorColorDic[color] = stockPorColor;
+                }
+            }
+        }
+    }
+
+    private void RecalcularStockPorColor()
+    {
+        // Guardar los valores existentes para colores que ya tenían stock
+        var valoresExistentes = new Dictionary<string, int>(stockPorColorDic);
+
+        // Limpiar diccionario
+        stockPorColorDic.Clear();
+
+        // Recargar colores disponibles
+        if (!string.IsNullOrEmpty(producto.ColoresDisponibles))
+        {
+            var nuevosColores = producto.ColoresDisponibles
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(c => c.Trim())
+                .ToList();
+
+            // Inicializar nuevos colores
+            foreach (var color in nuevosColores)
+            {
+                // Si el color ya existía, mantener su valor
+                if (valoresExistentes.ContainsKey(color))
+                {
+                    stockPorColorDic[color] = valoresExistentes[color];
+                }
+                else
+                {
+                    // Nuevo color: asignar valor por defecto
+                    int stockPorColor = producto.Stock > 0 && nuevosColores.Count > 0 ?
+                                       producto.Stock / nuevosColores.Count : 0;
+                    stockPorColorDic[color] = stockPorColor;
+                }
+            }
+
+            // Recalcular stock total
+            CalcularTotalStock();
+        }
+
+        StateHasChanged();
+    }
+
+    private string ObtenerColorHex(string colorNombre)
+    {
+        var colores = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            {"Rojo", "#dc3545"}, {"Azul", "#0d6efd"}, {"Verde", "#198754"},
+            {"Amarillo", "#ffc107"}, {"Naranja", "#fd7e14"}, {"Rosa", "#d63384"},
+            {"Morado", "#6f42c1"}, {"Negro", "#000000"}, {"Blanco", "#ffffff"},
+            {"Gris", "#6c757d"}, {"Dorado", "#ffd700"}, {"Plateado", "#c0c0c0"},
+            {"Celeste", "#0dcaf0"}, {"Violeta", "#6f42c1"}, {"Marron", "#8b4513"},
+            {"Lila", "#c8a2c8"}, {"Turquesa", "#40e0d0"}, {"Beige", "#f5f5dc"},
+            {"Bordo", "#800000"}, {"Mostaza", "#ffdb58"}
+        };
+
+        return colores.ContainsKey(colorNombre) ? colores[colorNombre] : "#6c757d";
+    }
+
+    private void ActualizarStockColor(string color, ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int nuevoStock))
+        {
+            stockPorColorDic[color] = nuevoStock;
+            CalcularTotalStock();
+            StateHasChanged();
+        }
+    }
+
+    private void PonerEnCero(string color)
+    {
+        stockPorColorDic[color] = 0;
+        CalcularTotalStock();
+        StateHasChanged();
+    }
+
+    private void DistribuirEquitativamente()
+    {
+        if (!string.IsNullOrEmpty(producto.ColoresDisponibles) && producto.Stock > 0)
+        {
+            var colores = producto.ColoresDisponibles
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(c => c.Trim())
+                .ToList();
+
+            if (colores.Count > 0)
+            {
+                int stockPorColor = producto.Stock / colores.Count;
+
+                foreach (var color in colores)
+                {
+                    stockPorColorDic[color] = stockPorColor;
+                }
+
+                StateHasChanged();
+            }
+        }
+    }
+
+    private void CalcularTotalStock()
+    {
+        producto.Stock = stockPorColorDic.Values.Sum();
+        StateHasChanged();
+    }
+
+    // Método para convertir diccionario a string StockPorColor
+    private string ConvertirDiccionarioAStockPorColor()
+    {
+        if (stockPorColorDic.Count == 0) return "";
+        return string.Join(";", stockPorColorDic.Select(kv => $"{kv.Key}:{kv.Value}"));
+    }
+
     private async Task GuardarProducto()
     {
         cargando = true;
@@ -312,12 +596,17 @@
 
         try
         {
-            Console.WriteLine("💾 GUARDANDO PRODUCTO:");
-            Console.WriteLine($"- Nombre: {producto.Nombre}");
-            Console.WriteLine($"- Tiene variantes: {producto.TieneVariantes}");
-            Console.WriteLine($"- Colores: {producto.ColoresDisponibles}");
-            Console.WriteLine($"- Tamaños: {producto.TamaniosDisponibles}");
-            Console.WriteLine($"- Imágenes variantes: {producto.ImagenesVariantes}");
+            // DEBUG: Mostrar datos antes de guardar
+            Console.WriteLine("=== DEBUG STOCK POR COLOR ===");
+            Console.WriteLine($"String original: {producto.StockPorColor}");
+            Console.WriteLine($"Diccionario: {string.Join(", ", stockPorColorDic.Select(kv => $"{kv.Key}:{kv.Value}"))}");
+
+            // Convertir el diccionario a string para StockPorColor
+            producto.StockPorColor = ConvertirDiccionarioAStockPorColor();
+
+            Console.WriteLine($"String convertido: {producto.StockPorColor}");
+            Console.WriteLine($"Stock total: {producto.Stock}");
+            Console.WriteLine("==============================");
 
             if (Id == 0)
             {
@@ -350,11 +639,11 @@
                     Stock = producto.Stock,
                     ImagenUrl = producto.ImagenUrl,
                     CategoriaId = producto.CategoriaId,
-                    // NUEVOS CAMPOS
                     TieneVariantes = producto.TieneVariantes,
                     ColoresDisponibles = producto.ColoresDisponibles,
                     TamaniosDisponibles = producto.TamaniosDisponibles,
-                    ImagenesVariantes = producto.ImagenesVariantes
+                    ImagenesVariantes = producto.ImagenesVariantes,
+                    StockPorColor = producto.StockPorColor
                 };
 
                 var respuesta = await ProductoService.UpdateProducto(Id, productoActualizado);
@@ -378,6 +667,7 @@
         {
             mensajeError = $"Error: {ex.Message}";
             Console.WriteLine($"❌ ERROR: {ex.Message}");
+            Console.WriteLine($"❌ StackTrace: {ex.StackTrace}");
         }
 
         cargando = false;
@@ -422,5 +712,20 @@
     .badge.bg-primary, .badge.bg-secondary {
         font-size: 0.8rem;
         padding: 4px 8px;
+    }
+
+    /* Círculos de color */
+    .color-circle {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        border: 2px solid #dee2e6;
+        display: inline-block;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    /* Mejorar la tabla */
+    .table tbody tr:hover {
+        background-color: rgba(0, 0, 0, 0.02);
     }
 </style>

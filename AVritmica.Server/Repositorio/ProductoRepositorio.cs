@@ -78,7 +78,7 @@ namespace AVritmica.Server.RepositorioImplementacion
             if (productoExistente == null)
                 return false;
 
-            // ACTUALIZAR TODOS LOS CAMPOS (incluyendo los nuevos)
+            // ACTUALIZAR TODOS LOS CAMPOS 
             productoExistente.Nombre = entidad.Nombre;
             productoExistente.Descripcion = entidad.Descripcion;
             productoExistente.Precio = entidad.Precio;
@@ -86,11 +86,14 @@ namespace AVritmica.Server.RepositorioImplementacion
             productoExistente.ImagenUrl = entidad.ImagenUrl;
             productoExistente.CategoriaId = entidad.CategoriaId;
 
-            // NUEVOS CAMPOS PARA VARIANTES (¡ESTOS FALTAN!)
+            //  CAMPOS PARA VARIANTES
             productoExistente.TieneVariantes = entidad.TieneVariantes;
             productoExistente.ColoresDisponibles = entidad.ColoresDisponibles;
             productoExistente.TamaniosDisponibles = entidad.TamaniosDisponibles;
             productoExistente.ImagenesVariantes = entidad.ImagenesVariantes;
+
+            //  ACTUALIZAR STOCK POR COLOR 
+            productoExistente.StockPorColor = entidad.StockPorColor;
 
             _context.Productos.Update(productoExistente);
             await _context.SaveChangesAsync();
@@ -123,6 +126,15 @@ namespace AVritmica.Server.RepositorioImplementacion
             // No permitir stock negativo
             if (producto.Stock < 0)
                 producto.Stock = 0;
+
+            // Si el producto tiene variantes, necesitamos actualizar StockPorColor también
+            // O podrías decidir no permitir ActualizarStock para productos con variantes
+            if (producto.TieneVariantes)
+            {
+                // Opción 1: Distribuir la cantidad entre todos los colores
+                // Opción 2: Mostrar error y pedir que use la interfaz específica
+                // Por ahora, solo actualizamos el stock general
+            }
 
             _context.Productos.Update(producto);
             await _context.SaveChangesAsync();

@@ -36,16 +36,7 @@ else if (producto == null)
             <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
             <h4>Producto no encontrado</h4>
             <p>El producto que buscas no existe o ha sido eliminado.</p>
-            <a href="/catalogo" class="btn 
-
-
-
-
-
-
-
-
-mt-2">
+            <a href="/catalogo" class="btn mt-2">
                 <i class="fas fa-store me-1"></i>Volver al Catálogo
             </a>
         </div>
@@ -104,23 +95,43 @@ else
             <div class="col-lg-6">
                 <div class="card border-0 shadow-sm">
                     <div class="card-body p-4">
-                        <!-- Estado del stock -->
+                        <!-- Estado del stock (MEJORADO) -->
                         <div class="mb-3">
-                            @if (producto.Stock > 0)
+                            @if (producto.CompletamenteAgotado)
+                            {
+                                <span class="badge rounded-pill p-2"
+                                      style="background: linear-gradient(180deg, #dc3545 0%, #c82333 100%); color:#dc3545 0%;">
+                                    <i class="fas fa-times-circle me-1"></i>COMPLETAMENTE AGOTADO
+                                </span>
+                                <small class="text-muted ms-2">
+                                    <i class="fas fa-cube me-1"></i>No disponible en ningún color
+                                </small>
+                            }
+                            else if (producto.AlgunColorAgotado)
+                            {
+                                <span class="badge rounded-pill p-2"
+                                      style="background: linear-gradient(180deg, #ffc107 0%, #fd7e14 100%); color:#ffc107 0%;">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>STOCK LIMITADO
+                                </span>
+                                <small class="text-muted ms-2">
+                                    <i class="fas fa-cube me-1"></i>Algunos colores agotados
+                                </small>
+                            }
+                            else if (producto.Stock > 0)
                             {
                                 <span class="badge rounded-pill p-2"
                                       style="background: linear-gradient(180deg, #28a745 0%, #20c997 100%); color: #28a745 0%;">
-                                    <i class="fas fa-check-circle me-1"></i>Disponible
+                                    <i class="fas fa-check-circle me-1"></i>DISPONIBLE
                                 </span>
                                 <small class="text-muted ms-2">
-                                    <i class="fas fa-cube me-1"></i>@producto.Stock unidades disponibles
+                                    <i class="fas fa-cube me-1"></i>@producto.Stock unidades totales
                                 </small>
                             }
                             else
                             {
                                 <span class="badge rounded-pill p-2"
                                       style="background: linear-gradient(180deg, #dc3545 0%, #c82333 100%); color:#dc3545 0%;">
-                                    <i class="fas fa-times-circle me-1"></i>Agotado
+                                    <i class="fas fa-times-circle me-1"></i>AGOTADO
                                 </span>
                             }
                         </div>
@@ -132,7 +143,7 @@ else
                         <div class="mb-4">
                             <div class="d-flex align-items-center">
                                 <span class="h1 fw-bold me-3" style="color: #e753fe;">$@producto.Precio.ToString("N2")</span>
-                                @if (producto.Stock > 0)
+                                @if (producto.Stock > 0 && !producto.CompletamenteAgotado)
                                 {
                                     <span class="text-success">
                                         <i class="fas fa-check me-1"></i>En stock
@@ -149,24 +160,83 @@ else
                         </div>
 
                         <!-- SELECTOR DE COLOR (si el producto tiene variantes) -->
-                        @if (producto.TieneVariantes || coloresDisponibles.Count > 1)
+                        @if (producto.TieneVariantes && coloresDisponibles.Any())
                         {
                             <div class="mb-4">
                                 <h5 class="mb-3" style="color: #450050;">Color:</h5>
                                 <div class="d-flex flex-wrap gap-2">
                                     @foreach (var color in coloresDisponibles)
                                     {
-                                        <button class="btn @(colorSeleccionado == color ? "btn-violeta" : "btn-outline-violeta")"
-                                                @onclick="() => SeleccionarColor(color)">
-                                            @color
-                                        </button>
+                                        var stockColor = producto.ObtenerStockPorColor(color);
+                                        var estaAgotado = stockColor <= 0;
+                                        var tieneStockLimitado = stockColor > 0 && stockColor < 5;
+
+                                        <div class="color-option @(colorSeleccionado == color ? "selected" : "") @(estaAgotado ? "agotado" : "")"
+                                             style="cursor: @(estaAgotado ? "not-allowed" : "pointer");"
+                                             @onclick="() => SeleccionarColor(color)"
+                                             title="@color - Stock: @stockColor unidades">
+
+                                            <!-- Círculo de color -->
+                                            <div class="color-circle mb-1"
+                                                 style="background-color: @ObtenerColorHex(color);"></div>
+
+                                            <!-- Nombre del color -->
+                                            <small class="d-block fw-medium">@color</small>
+
+                                            <!-- Estado del stock -->
+                                            @if (estaAgotado)
+                                            {
+                                                <span class="badge bg-danger badge-sm">AGOTADO</span>
+                                            }
+                                            else if (tieneStockLimitado)
+                                            {
+                                                <span class="badge bg-warning text-dark badge-sm">@stockColor u.</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-success badge-sm">@stockColor u.</span>
+                                            }
+                                        </div>
                                     }
                                 </div>
+
+                                <!-- Mensaje si el color seleccionado está agotado -->
+                                @if (!string.IsNullOrEmpty(colorSeleccionado))
+                                {
+                                    var stockColorSeleccionado = producto.ObtenerStockPorColor(colorSeleccionado);
+                                    if (stockColorSeleccionado <= 0)
+                                    {
+                                        <div class="alert alert-danger mt-2">
+                                            <i class="fas fa-times-circle me-2"></i>
+                                            El color <strong>@colorSeleccionado</strong> está agotado.
+                                            @if (coloresConStock.Any())
+                                            {
+                                                <span>Por favor selecciona otro color.</span>
+                                            }
+                                        </div>
+                                    }
+                                    else if (stockColorSeleccionado < 5)
+                                    {
+                                        <div class="alert alert-warning mt-2">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                            Color <strong>@colorSeleccionado</strong> - Solo quedan <strong>@stockColorSeleccionado</strong> unidades.
+                                        </div>
+                                    }
+                                }
+
+                                <!-- Mensaje si ningún color tiene stock -->
+                                @if (coloresConStock.Count == 0 && coloresDisponibles.Any())
+                                {
+                                    <div class="alert alert-danger mt-2">
+                                        <i class="fas fa-exclamation-circle me-2"></i>
+                                        Todos los colores están agotados temporalmente.
+                                    </div>
+                                }
                             </div>
                         }
 
                         <!-- SELECTOR DE TAMAÑO (si el producto tiene variantes) -->
-                        @if (producto.TieneVariantes || tamaniosDisponibles.Count > 1)
+                        @if (producto.TieneVariantes && tamaniosDisponibles.Any())
                         {
                             <div class="mb-4">
                                 <h5 class="mb-3" style="color: #450050;">Tamaño:</h5>
@@ -183,7 +253,7 @@ else
                         }
 
                         <!-- Selector de cantidad -->
-                        @if (producto.Stock > 0)
+                        @if (puedeAgregarAlCarrito)
                         {
                             <div class="mb-4">
                                 <h5 class="mb-3" style="color: #450050;">Cantidad</h5>
@@ -196,20 +266,37 @@ else
                                     <input type="number"
                                            class="form-control text-center"
                                            @bind="cantidad"
+                                           @bind:event="oninput"
                                            min="1"
-                                           max="@producto.Stock"
+                                           max="@maximoCantidad"
                                            style="width: 80px;" />
                                     <button class="btn btn-outline-secondary rounded-circle"
                                             @onclick="IncrementarCantidad"
-                                            disabled="@(cantidad >= producto.Stock)">
+                                            disabled="@(cantidad >= maximoCantidad)">
                                         <i class="fas fa-plus"></i>
                                     </button>
-                                    <small class="text-muted">Máximo: @producto.Stock</small>
+                                    <small class="text-muted">Máximo: @maximoCantidad</small>
                                 </div>
+
+                                <!-- Advertencia si se excede el stock -->
+                                @if (cantidad > maximoCantidad)
+                                {
+                                    <div class="alert alert-warning mt-2">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        Solo hay @maximoCantidad unidades disponibles.
+                                    </div>
+                                }
+                                else if (cantidad == maximoCantidad && maximoCantidad < 10)
+                                {
+                                    <div class="alert alert-info mt-2">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Estás comprando las últimas @maximoCantidad unidades.
+                                    </div>
+                                }
                             </div>
 
                             <!-- Resumen de selección -->
-                            @if (producto.TieneVariantes || coloresDisponibles.Count > 1 || tamaniosDisponibles.Count > 1)
+                            @if (producto.TieneVariantes && (!string.IsNullOrEmpty(colorSeleccionado) || !string.IsNullOrEmpty(tamanoSeleccionado)))
                             {
                                 <div class="alert alert-info mb-4">
                                     <div class="d-flex justify-content-between">
@@ -230,7 +317,7 @@ else
                                         <div class="text-end">
                                             <small class="text-muted d-block">Total:</small>
                                             <span class="h5 fw-bold" style="color: #e753fe;">
-                                                $@(producto.Precio* cantidad)
+                                                $@((producto.Precio * cantidad).ToString("N2"))
                                             </span>
                                         </div>
                                     </div>
@@ -241,7 +328,7 @@ else
                             <div class="d-grid gap-3 mb-4">
                                 <button class="btn btn-lg btn-violeta py-3"
                                         @onclick="AgregarAlCarrito"
-                                        disabled="@(producto.Stock <= 0 || agregandoAlCarrito)">
+                                        disabled="@(agregandoAlCarrito || !puedeAgregarAlCarrito || cantidad > maximoCantidad)">
                                     @if (agregandoAlCarrito)
                                     {
                                         <span class="spinner-border spinner-border-sm me-2" role="status"></span>
@@ -254,7 +341,9 @@ else
                                     }
                                 </button>
 
-                                <button class="btn btn-outline-violeta btn-lg py-3" @onclick="ComprarAhora">
+                                <button class="btn btn-outline-violeta btn-lg py-3"
+                                        @onclick="ComprarAhora"
+                                        disabled="@(!puedeAgregarAlCarrito || cantidad > maximoCantidad)">
                                     <i class="fas fa-bolt me-2"></i>Comprar Ahora
                                 </button>
                             </div>
@@ -263,7 +352,14 @@ else
                         {
                             <div class="alert alert-warning mb-4">
                                 <i class="fas fa-exclamation-triangle me-2"></i>
-                                Este producto está temporalmente agotado.
+                                Este producto está temporalmente no disponible.
+                                @if (producto.TieneVariantes && coloresConStock.Any())
+                                {
+                                    <div class="mt-1">
+                                        Los siguientes colores están disponibles:
+                                        @string.Join(", ", coloresConStock)
+                                    </div>
+                                }
                             </div>
                         }
 
@@ -279,16 +375,31 @@ else
                                         </span>
                                     </div>
                                     <div class="mb-2">
-                                        <small class="text-muted d-block">Stock actual</small>
+                                        <small class="text-muted d-block">Stock total</small>
                                         <span class="fw-medium">@producto.Stock unidades</span>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-2">
                                         <small class="text-muted d-block">Estado</small>
-                                        <span class="fw-medium @(producto.Stock > 0 ? "text-success" : "text-danger")">
-                                            @(producto.Stock > 0 ? "Disponible" : "Agotado")
-                                        </span>
+                                        @if (producto.CompletamenteAgotado)
+                                        {
+                                            <span class="fw-medium text-danger">
+                                                <i class="fas fa-times-circle me-1"></i>Completamente agotado
+                                            </span>
+                                        }
+                                        else if (producto.AlgunColorAgotado)
+                                        {
+                                            <span class="fw-medium text-warning">
+                                                <i class="fas fa-exclamation-triangle me-1"></i>Stock limitado
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="fw-medium text-success">
+                                                <i class="fas fa-check-circle me-1"></i>Disponible
+                                            </span>
+                                        }
                                     </div>
                                     <div class="mb-2">
                                         <small class="text-muted d-block">Variantes</small>
@@ -298,6 +409,41 @@ else
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Stock por color detallado -->
+                            @if (producto.TieneVariantes && coloresDisponibles.Any())
+                            {
+                                <div class="mt-3 pt-3 border-top">
+                                    <h6 style="color: #450050;">Stock por color:</h6>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        @foreach (var color in coloresDisponibles)
+                                        {
+                                            var stockColor = producto.ObtenerStockPorColor(color);
+                                            <div class="border rounded p-2" style="width: 100px;">
+                                                <div class="d-flex align-items-center mb-1">
+                                                    <div class="color-circle-sm me-2"
+                                                         style="background-color: @ObtenerColorHex(color);"></div>
+                                                    <small class="fw-medium">@color</small>
+                                                </div>
+                                                <div class="text-center">
+                                                    @if (stockColor <= 0)
+                                                    {
+                                                        <span class="badge bg-danger">AGOTADO</span>
+                                                    }
+                                                    else if (stockColor < 5)
+                                                    {
+                                                        <span class="badge bg-warning text-dark">@stockColor u.</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-success">@stockColor u.</span>
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
                         </div>
 
                         <!-- Envío y garantía -->
@@ -348,10 +494,16 @@ else
     private List<string> tamaniosDisponibles = new();
     private List<string> imagenesVariantes = new();
 
+    // Nuevas variables para manejo de stock por color
+    private List<string> coloresConStock = new();
+    private int maximoCantidad = 0;
+    private bool puedeAgregarAlCarrito = false;
+
     protected override async Task OnInitializedAsync()
     {
         await CargarProducto();
         InicializarVariantes();
+        ActualizarEstadoCompra();
     }
 
     private async Task CargarProducto()
@@ -370,6 +522,16 @@ else
                 Console.WriteLine($"- Tiene variantes: {producto.TieneVariantes}");
                 Console.WriteLine($"- Colores: {producto.ColoresDisponibles}");
                 Console.WriteLine($"- Tamaños: {producto.TamaniosDisponibles}");
+                Console.WriteLine($"- StockPorColor: {producto.StockPorColor}");
+                Console.WriteLine($"- CompletamenteAgotado: {producto.CompletamenteAgotado}");
+                Console.WriteLine($"- AlgunColorAgotado: {producto.AlgunColorAgotado}");
+
+                // Mostrar stock por color en consola
+                if (producto.TieneVariantes && !string.IsNullOrEmpty(producto.ColoresDisponibles))
+                {
+                    var diccionario = producto.ObtenerStockPorColorDiccionario();
+                    Console.WriteLine($"- Stock por color: {string.Join(", ", diccionario.Select(kv => $"{kv.Key}: {kv.Value}"))}");
+                }
             }
             else
             {
@@ -393,8 +555,10 @@ else
             coloresDisponibles = producto.ObtenerColoresLista();
             tamaniosDisponibles = producto.ObtenerTamaniosLista();
             imagenesVariantes = producto.ObtenerImagenesVariantesLista();
+            coloresConStock = producto.ColoresConStockLista;
 
             Console.WriteLine($"Colores disponibles: {string.Join(", ", coloresDisponibles)}");
+            Console.WriteLine($"Colores con stock: {string.Join(", ", coloresConStock)}");
             Console.WriteLine($"Tamaños disponibles: {string.Join(", ", tamaniosDisponibles)}");
             Console.WriteLine($"Imágenes variantes: {string.Join(", ", imagenesVariantes)}");
 
@@ -415,16 +579,50 @@ else
 
             // Seleccionar primera opción por defecto
             if (coloresDisponibles.Any())
-                colorSeleccionado = coloresDisponibles.First();
+            {
+                // Seleccionar primer color con stock si existe
+                if (coloresConStock.Any())
+                {
+                    colorSeleccionado = coloresConStock.First();
+                }
+                else
+                {
+                    colorSeleccionado = coloresDisponibles.First();
+                }
+            }
 
             if (tamaniosDisponibles.Any())
                 tamanoSeleccionado = tamaniosDisponibles.First();
         }
     }
 
+    private void ActualizarEstadoCompra()
+    {
+        if (producto == null) return;
+
+        if (producto.TieneVariantes && !string.IsNullOrEmpty(colorSeleccionado))
+        {
+            // Producto con variantes: usar stock del color seleccionado
+            maximoCantidad = producto.ObtenerStockPorColor(colorSeleccionado);
+            puedeAgregarAlCarrito = maximoCantidad > 0;
+        }
+        else
+        {
+            // Producto sin variantes: usar stock general
+            maximoCantidad = producto.Stock;
+            puedeAgregarAlCarrito = maximoCantidad > 0;
+        }
+
+        // Ajustar cantidad si excede el máximo
+        if (cantidad > maximoCantidad && maximoCantidad > 0)
+        {
+            cantidad = maximoCantidad;
+        }
+    }
+
     private void IncrementarCantidad()
     {
-        if (cantidad < producto.Stock)
+        if (cantidad < maximoCantidad)
         {
             cantidad++;
         }
@@ -440,9 +638,18 @@ else
 
     private void SeleccionarColor(string color)
     {
-        colorSeleccionado = color;
-        StateHasChanged();
-        Console.WriteLine($"Color seleccionado: {color}");
+        var stockColor = producto.ObtenerStockPorColor(color);
+        if (stockColor > 0) // Solo permitir seleccionar si tiene stock
+        {
+            colorSeleccionado = color;
+            ActualizarEstadoCompra();
+            StateHasChanged();
+            Console.WriteLine($"Color seleccionado: {color} (Stock: {stockColor})");
+        }
+        else
+        {
+            Console.WriteLine($"No se puede seleccionar {color} - Está agotado");
+        }
     }
 
     private void SeleccionarTamaño(string tamaño)
@@ -461,7 +668,7 @@ else
 
     private async Task AgregarAlCarrito()
     {
-        if (producto == null || producto.Stock <= 0) return;
+        if (!puedeAgregarAlCarrito || cantidad > maximoCantidad) return;
 
         agregandoAlCarrito = true;
         StateHasChanged();
@@ -473,17 +680,21 @@ else
             {
                 ProductoId = producto.Id,
                 ProductoNombre = producto.Nombre,
-                Color = colorSeleccionado,
-                Tamaño = tamanoSeleccionado,
+                Color = producto.TieneVariantes ? colorSeleccionado : null,
+                Tamaño = producto.TieneVariantes ? tamanoSeleccionado : null,
                 Cantidad = cantidad,
                 PrecioUnitario = producto.Precio,
-                Total = producto.Precio * cantidad
+                Total = producto.Precio * cantidad,
+                StockColor = producto.TieneVariantes ? producto.ObtenerStockPorColor(colorSeleccionado) : producto.Stock
             };
 
             Console.WriteLine("📦 AGREGANDO AL CARRITO:");
             Console.WriteLine($"- Producto: {varianteSeleccionada.ProductoNombre}");
-            Console.WriteLine($"- Color: {varianteSeleccionada.Color}");
-            Console.WriteLine($"- Tamaño: {varianteSeleccionada.Tamaño}");
+            if (producto.TieneVariantes)
+            {
+                Console.WriteLine($"- Color: {varianteSeleccionada.Color} (Stock: {varianteSeleccionada.StockColor})");
+                Console.WriteLine($"- Tamaño: {varianteSeleccionada.Tamaño}");
+            }
             Console.WriteLine($"- Cantidad: {varianteSeleccionada.Cantidad}");
             Console.WriteLine($"- Total: ${varianteSeleccionada.Total:N2}");
 
@@ -505,18 +716,38 @@ else
 
     private void ComprarAhora()
     {
-        if (producto.Stock > 0)
+        if (puedeAgregarAlCarrito && cantidad <= maximoCantidad)
         {
             Console.WriteLine("⚡ COMPRAR AHORA:");
             Console.WriteLine($"- Producto: {producto.Nombre}");
-            Console.WriteLine($"- Color: {colorSeleccionado}");
-            Console.WriteLine($"- Tamaño: {tamanoSeleccionado}");
+            if (producto.TieneVariantes)
+            {
+                Console.WriteLine($"- Color: {colorSeleccionado}");
+                Console.WriteLine($"- Tamaño: {tamanoSeleccionado}");
+                Console.WriteLine($"- Stock del color: {producto.ObtenerStockPorColor(colorSeleccionado)} unidades");
+            }
             Console.WriteLine($"- Cantidad: {cantidad}");
             Console.WriteLine($"- Total: ${(producto.Precio * cantidad):N2}");
 
             // TODO: Redirigir al checkout
             // Navigation.NavigateTo($"/checkout?productoId={producto.Id}&color={colorSeleccionado}&tamaño={tamanoSeleccionado}&cantidad={cantidad}");
         }
+    }
+
+    private string ObtenerColorHex(string colorNombre)
+    {
+        var colores = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            {"Rojo", "#dc3545"}, {"Azul", "#0d6efd"}, {"Verde", "#198754"},
+            {"Amarillo", "#ffc107"}, {"Naranja", "#fd7e14"}, {"Rosa", "#d63384"},
+            {"Morado", "#6f42c1"}, {"Negro", "#000000"}, {"Blanco", "#ffffff"},
+            {"Gris", "#6c757d"}, {"Dorado", "#ffd700"}, {"Plateado", "#c0c0c0"},
+            {"Celeste", "#0dcaf0"}, {"Violeta", "#6f42c1"}, {"Marron", "#8b4513"},
+            {"Lila", "#c8a2c8"}, {"Turquesa", "#40e0d0"}, {"Beige", "#f5f5dc"},
+            {"Bordo", "#800000"}, {"Mostaza", "#ffdb58"}
+        };
+
+        return colores.ContainsKey(colorNombre) ? colores[colorNombre] : "#6c757d";
     }
 }
 
@@ -549,7 +780,7 @@ else
         width: 40px;
         height: 40px;
         display: flex;
-        align-items-center;
+        align-items: center;
         justify-content: center;
     }
 
@@ -567,5 +798,63 @@ else
         padding: 8px 16px;
         border-radius: 20px;
         font-size: 0.9rem;
+    }
+
+    /* Estilos para opciones de color */
+    .color-option {
+        width: 90px;
+        padding: 10px;
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        text-align: center;
+        transition: all 0.2s;
+    }
+
+        .color-option:hover:not(.agotado) {
+            border-color: #e753fe;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(231, 83, 254, 0.2);
+        }
+
+        .color-option.selected {
+            border-color: #e753fe;
+            background-color: rgba(231, 83, 254, 0.05);
+        }
+
+        .color-option.agotado {
+            opacity: 0.5;
+            position: relative;
+        }
+
+            .color-option.agotado::after {
+                content: "✗";
+                position: absolute;
+                top: 5px;
+                right: 5px;
+                color: #dc3545;
+                font-weight: bold;
+            }
+
+    .color-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin: 0 auto;
+        border: 2px solid #fff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .color-circle-sm {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 1px solid #dee2e6;
+    }
+
+    .badge-sm {
+        font-size: 0.65rem;
+        padding: 2px 6px;
+        margin-top: 2px;
+        display: block;
     }
 </style>

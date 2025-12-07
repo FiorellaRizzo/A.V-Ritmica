@@ -182,11 +182,13 @@ namespace AVritmica.Server.Controllers
                     Stock = productoDTO.Stock,
                     ImagenUrl = productoDTO.ImagenUrl,
                     CategoriaId = productoDTO.CategoriaId,
-                    // NUEVOS CAMPOS PARA VARIANTES
+                    // CAMPOS PARA VARIANTES
                     TieneVariantes = productoDTO.TieneVariantes,
                     ColoresDisponibles = productoDTO.ColoresDisponibles ?? "",
                     TamaniosDisponibles = productoDTO.TamaniosDisponibles ?? "",
-                    ImagenesVariantes = productoDTO.ImagenesVariantes ?? ""
+                    ImagenesVariantes = productoDTO.ImagenesVariantes ?? "",
+                    // AGREGAR StockPorColor
+                    StockPorColor = productoDTO.StockPorColor ?? ""
                 };
 
                 var productoId = await _repositorio.Insert(producto);

@@ -121,11 +121,11 @@ namespace AVritmica.BD.Data
 
             // ... otras configuraciones
 
-            modelBuilder.Entity<StockMovimiento>()
+            /*modelBuilder.Entity<StockMovimiento>()
                 .HasOne(sm => sm.Producto)
                 .WithMany()
                 .HasForeignKey(sm => sm.ProductoId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Restrict);*/
 
             modelBuilder.Entity<StockMovimiento>()
                 .HasOne(sm => sm.Carrito)
