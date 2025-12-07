@@ -81,13 +81,13 @@ else
                                 <span class="badge bg-secondary">@pago.MetodoPago</span>
                             </td>
                             <td class="text-end">
-                                <strong>@pago.MontoPagado.ToString("C")</strong>
+                                <strong>$@pago.MontoPagado.ToString("N2")</strong>
                             </td>
                             <td>
                                 <span class="badge @GetEstadoPagoBadgeClass(pago.EstadoPago)">@pago.EstadoPago</span>
                             </td>
                             <td class="text-end @(pago.Saldo > 0 ? "text-warning" : "text-success")">
-                                <strong>@pago.Saldo.ToString("C")</strong>
+                                <strong>$@pago.Saldo.ToString("N2")</strong>
                             </td>
                             <td>
                                 <div class="btn-group btn-group-sm" role="group">
@@ -111,9 +111,9 @@ else
                 <tfoot>
                     <tr class="table-primary">
                         <td colspan="3" class="text-end"><strong>Total General:</strong></td>
-                        <td class="text-end"><strong>@pagosFiltrados.Sum(p => p.MontoPagado).ToString("C")</strong></td>
+                        <td class="text-end"><strong>@pagosFiltrados.Sum(p => p.MontoPagado).ToString("N2")</strong></td>
                         <td></td>
-                        <td class="text-end"><strong>@pagosFiltrados.Sum(p => p.Saldo).ToString("C")</strong></td>
+                        <td class="text-end"><strong>@pagosFiltrados.Sum(p => p.Saldo).ToString("N2")</strong></td>
                         <td></td>
                     </tr>
                 </tfoot>
@@ -124,8 +124,8 @@ else
             <i class="fas fa-chart-bar me-2"></i>
             <strong>Resumen:</strong>
             @pagosFiltrados.Count pagos -
-            Total Pagado: @pagosFiltrados.Sum(p => p.MontoPagado).ToString("C") -
-            Saldo Pendiente: @pagosFiltrados.Sum(p => p.Saldo).ToString("C")
+            Total Pagado: @pagosFiltrados.Sum(p => p.MontoPagado).ToString("N2") -
+            Saldo Pendiente: @pagosFiltrados.Sum(p => p.Saldo).ToString("N2")
         </div>
     }
     else
@@ -233,7 +233,7 @@ else
         bool confirmado = await JS.InvokeAsync<bool>("confirm",
             $"¿Está seguro de eliminar el pago?\n\n" +
             $"Usuario: {pago.Carrito?.Usuario?.Nombre}\n" +
-            $"Monto: {pago.MontoPagado.ToString("C")}\n" +
+            $"Monto: {pago.MontoPagado.ToString("N2")}\n" +
             $"Método: {pago.MetodoPago}\n" +
             $"Fecha: {pago.FechaPago.ToString("dd/MM/yyyy HH:mm")}\n\n" +
             "Esta acción no se puede deshacer.");

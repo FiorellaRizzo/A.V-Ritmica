@@ -21,6 +21,25 @@ namespace AVritmica.Shared.DTO
         public string ImagenUrl { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "La categoría es requerida")]
-        public int CategoriaId { get; set; } // ¡Esto faltaba!
+        public int CategoriaId { get; set; }
+
+       
+        // NUEVOS CAMPOS PARA VARIANTES
+        
+
+        [Display(Name = "¿Tiene variantes?")]
+        public bool TieneVariantes { get; set; } = false;
+
+        [Display(Name = "Colores disponibles")]
+        [MaxLength(500, ErrorMessage = "Los colores no pueden exceder 500 caracteres")]
+        public string ColoresDisponibles { get; set; } = string.Empty;
+
+        [Display(Name = "Tamaños disponibles")]
+        [MaxLength(500, ErrorMessage = "Los tamaños no pueden exceder 500 caracteres")]
+        public string TamaniosDisponibles { get; set; } = string.Empty;
+
+        [Display(Name = "Imágenes de variantes")]
+        [MaxLength(2000, ErrorMessage = "Las URLs de imágenes no pueden exceder 2000 caracteres")]
+        public string ImagenesVariantes { get; set; } = string.Empty;
     }
 }

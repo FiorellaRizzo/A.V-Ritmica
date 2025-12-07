@@ -30,11 +30,62 @@ namespace AVritmica.BD.Data.Entity
 
         // Clave foránea
         public int CategoriaId { get; set; }
-        public Categoria Categoria { get; set; }
+        public Categoria ?Categoria { get; set; }
 
         public List<CarritoProducto> CarritoProductos { get; set; } = new List<CarritoProducto>();
         public List<StockMovimiento> StockMovimientos { get; set; } = new List<StockMovimiento>();
         public List<CompraDetalle> CompraDetalles { get; set; } = new List<CompraDetalle>();
+    
+
+    // NUEVAS PROPIEDADES PARA VARIANTES 
+    
+    
+    [MaxLength(500)]
+        public string ColoresDisponibles { get; set; } = string.Empty;
+
+        [MaxLength(500)]
+        public string TamaniosDisponibles { get; set; } = string.Empty;
+
+        [MaxLength(2000)]
+        public string ImagenesVariantes { get; set; } = string.Empty;
+
+        public bool TieneVariantes { get; set; } = false;
+
+        // Método helper para obtener lista de colores
+        public List<string> ObtenerColoresLista()
+        {
+            if (string.IsNullOrWhiteSpace(ColoresDisponibles))
+                return new List<string>();
+
+            return ColoresDisponibles
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(c => c.Trim())
+                .ToList();
+        }
+
+        // Método helper para obtener lista de tamaños
+        public List<string> ObtenerTamaniosLista()
+        {
+            if (string.IsNullOrWhiteSpace(TamaniosDisponibles))
+                return new List<string>();
+
+            return TamaniosDisponibles
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(t => t.Trim())
+                .ToList();
+        }
+
+        // Método helper para obtener lista de imágenes variantes
+        public List<string> ObtenerImagenesVariantesLista()
+        {
+            if (string.IsNullOrWhiteSpace(ImagenesVariantes))
+                return new List<string>();
+
+            return ImagenesVariantes
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(i => i.Trim())
+                .ToList();
+        }
     }
 }
 

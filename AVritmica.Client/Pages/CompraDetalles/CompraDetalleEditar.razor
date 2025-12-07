@@ -161,18 +161,18 @@
                                         <div class="row text-center">
                                             <div class="col-md-4">
                                                 <small class="text-muted">Subtotal Compra</small>
-                                                <h5 class="text-primary">@SubtotalCompra.ToString("C2")</h5>
+                                                <h5 class="text-primary">$@SubtotalCompra.ToString("N2")</h5>
                                             </div>
                                             <div class="col-md-4">
                                                 <small class="text-muted">Margen por Unidad</small>
                                                 <h5 class="@(MargenUnidad >= 0 ? "text-success" : "text-danger")">
-                                                    @MargenUnidad.ToString("C2")
+                                                    $@MargenUnidad.ToString("N2")
                                                 </h5>
                                             </div>
                                             <div class="col-md-4">
                                                 <small class="text-muted">Margen Total</small>
                                                 <h5 class="@(MargenTotal >= 0 ? "text-success" : "text-danger")">
-                                                    @MargenTotal.ToString("C2")
+                                                    $@MargenTotal.ToString("N2")
                                                 </h5>
                                             </div>
                                         </div>

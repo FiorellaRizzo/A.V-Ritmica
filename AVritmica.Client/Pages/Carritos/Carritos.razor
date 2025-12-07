@@ -114,9 +114,9 @@ else
                             <td>
                                 <span class="badge @GetEstadoPagoBadgeClass(carrito.EstadoPago)" title="@GetEstadoPagoTooltip(carrito.EstadoPago)">@carrito.EstadoPago</span>
                             </td>
-                            <td><strong>@carrito.MontoTotal.ToString("C")</strong></td>
+                            <td><strong>$@carrito.MontoTotal.ToString("N2")</strong></td>
                             <td class="@(carrito.Saldo > 0 ? "text-warning" : "text-success")">
-                                <strong>@carrito.Saldo.ToString("C")</strong>
+                                <strong>$@carrito.Saldo.ToString("N2")</strong>
                             </td>
                             <td>
                                 <div class="btn-group btn-group-sm" role="group">
@@ -278,7 +278,7 @@ else
     private async Task EliminarCarrito(Carrito carrito)
     {
         bool confirmado = await JS.InvokeAsync<bool>("confirm",
-            $"¿Está seguro de eliminar el carrito de {carrito.Usuario?.Nombre}?\n\nProductos: {carrito.CarritoProductos?.Count ?? 0}\nMonto Total: {carrito.MontoTotal.ToString("C")}\n\nEsta acción no se puede deshacer.");
+            $"¿Está seguro de eliminar el carrito de {carrito.Usuario?.Nombre}?\n\nProductos: {carrito.CarritoProductos?.Count ?? 0}\nMonto Total: {carrito.MontoTotal.ToString("N2")}\n\nEsta acción no se puede deshacer.");
 
         if (confirmado)
         {

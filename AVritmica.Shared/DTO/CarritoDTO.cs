@@ -29,5 +29,11 @@ namespace AVritmica.Shared.DTO
 
         [StringLength(500)]
         public string DireccionEnvio { get; set; } = string.Empty;
+
+      
+        public int CarritoId { get; set; }
+        public int ProductoId { get; set; }
+        public int Cantidad { get; set; }
+        public decimal PrecioUnitario { get; set; }
     }
 }

@@ -58,7 +58,7 @@ else
                     <div class="card bg-primary text-white">
                         <div class="card-body text-center">
                             <h6>Monto Total</h6>
-                            <h4>@carrito.MontoTotal.ToString("C")</h4>
+                            <h4>$@carrito.MontoTotal.ToString("N2")</h4>
                         </div>
                     </div>
                 </div>
@@ -66,7 +66,7 @@ else
                     <div class="card @(carrito.Saldo > 0 ? "bg-warning" : "bg-success") text-white">
                         <div class="card-body text-center">
                             <h6>Saldo Pendiente</h6>
-                            <h4>@carrito.Saldo.ToString("C")</h4>
+                            <h4>$@carrito.Saldo.ToString("N2")</h4>
                         </div>
                     </div>
                 </div>
@@ -114,15 +114,15 @@ else
                                         <td>
                                             <span class="badge @(item.Cantidad > 0 ? "bg-primary" : "bg-danger")">@item.Cantidad</span>
                                         </td>
-                                        <td>@item.PrecioUnitario.ToString("C")</td>
-                                        <td><strong>@((item.Cantidad * item.PrecioUnitario).ToString("C"))</strong></td>
+                                        <td>$@item.PrecioUnitario.ToString("N2")</td>
+                                        <td><strong>$@((item.Cantidad * item.PrecioUnitario).ToString("N2"))</strong></td>
                                     </tr>
                                 }
                             </tbody>
                             <tfoot class="table-light">
                                 <tr>
                                     <td colspan="4" class="text-end"><strong>Total:</strong></td>
-                                    <td><strong>@carrito.MontoTotal.ToString("C")</strong></td>
+                                    <td><strong>$@carrito.MontoTotal.ToString("N2")</strong></td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -156,7 +156,7 @@ else
                                 {
                                     <tr>
                                         <td>@pago.FechaPago.ToString("dd/MM/yyyy HH:mm")</td>
-                                        <td>@pago.MontoPagado.ToString("C")</td>
+                                        <td>$@pago.MontoPagado.ToString("N2")</td>
                                         <td>@pago.MetodoPago</td>
                                         <td>
                                             <span class="badge @GetEstadoPagoBadgeClass(pago.EstadoPago)">@pago.EstadoPago</span>
@@ -169,12 +169,12 @@ else
 
                     <div class="row mt-2">
                         <div class="col-md-6">
-                            <strong>Total Pagado:</strong> @carrito.Pagos.Sum(p => p.MontoPagado).ToString("C")
+                            <strong>Total Pagado:</strong> $@carrito.Pagos.Sum(p => p.MontoPagado).ToString("N2")
                         </div>
                         <div class="col-md-6">
                             <strong>Saldo Restante:</strong>
                             <span class="@(carrito.Saldo > 0 ? "text-warning" : "text-success")">
-                                @carrito.Saldo.ToString("C")
+                                $@carrito.Saldo.ToString("N2")
                             </span>
                         </div>
                     </div>

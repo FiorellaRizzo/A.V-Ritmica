@@ -14,20 +14,7 @@
             Sistema integral de gestión para tu negocio - Control de inventario, ventas, compras y reportes
         </p>
 
-        <div class="features-grid">
-            <div class="feature-item">
-                <i class="fas fa-boxes"></i>
-                <span>Gestión de Stock</span>
-            </div>
-            <div class="feature-item">
-                <i class="fas fa-chart-line"></i>
-                <span>Reportes Avanzados</span>
-            </div>
-            <div class="feature-item">
-                <i class="fas fa-shopping-cart"></i>
-                <span>Control de Ventas</span>
-            </div>
-        </div>
+      
 
         <div class="cta-buttons">
             <button class="btn-primary" @onclick="IrAProductos">
@@ -42,26 +29,14 @@
                 <i class="fas fa-chart-bar"></i>
                 Ver Reportes
             </button>
+            <button class="btn-Fourth" @onclick="IrACatalogo">
+                <i class="fas fa-chart-bar"></i>
+                Ver Catalogo
+            </button>
         </div>
 
-        <div class="quick-stats">
-            <div class="stat">
-                <span class="stat-number">@estadisticas.TotalProductos</span>
-                <span class="stat-label">Productos</span>
-            </div>
-            <div class="stat">
-                <span class="stat-number">@estadisticas.TotalVentas.ToString("C")</span>
-                <span class="stat-label">Ventas Totales</span>
-            </div>
-            <div class="stat">
-                <span class="stat-number">@estadisticas.StockBajo</span>
-                <span class="stat-label">Stock Bajo</span>
-            </div>
-            <div class="stat">
-                <span class="stat-number">@estadisticas.CarritosActivos</span>
-                <span class="stat-label">Carritos Activos</span>
-            </div>
-        </div>
+        
+
     </div>
 </div>
 
@@ -77,8 +52,7 @@
                 <h3>Gestión de Productos</h3>
                 <p>Administra productos, categorías y controla el inventario en tiempo real</p>
                 <div class="module-stats">
-                    <span class="stat-badge">@estadisticas.TotalProductos productos</span>
-                    <span class="stat-badge badge-warning">@estadisticas.StockBajo bajo stock</span>
+                    
                 </div>
             </div>
 
@@ -89,7 +63,7 @@
                 <h3>Categorías</h3>
                 <p>Organiza tus productos por categorías para un mejor control y búsqueda</p>
                 <div class="module-stats">
-                    <span class="stat-badge">@estadisticas.TotalCategorias categorías</span>
+                    
                 </div>
             </div>
 
@@ -106,13 +80,12 @@
 
             <div class="module-card" @onclick="IrACarritos">
                 <div class="module-icon">
-                    <i class="fas fa-shopping-cart"></i>
+                <i class="fas fa-shopping-cart"></i>
                 </div>
                 <h3>Gestión de Ventas</h3>
                 <p>Controla carritos de compra, pedidos y proceso completo de ventas</p>
                 <div class="module-stats">
-                    <span class="stat-badge">@estadisticas.CarritosActivos activos</span>
-                    <span class="stat-badge badge-success">@estadisticas.VentasHoy hoy</span>
+                    
                 </div>
             </div>
 
@@ -283,7 +256,7 @@
         flex-wrap: wrap;
     }
 
-    .btn-primary, .btn-secondary, .btn-tertiary {
+    .btn-primary, .btn-secondary, .btn-tertiary, .btn-Fourth {
         padding: 15px 30px;
         font-size: 1.1rem;
         border: none;
@@ -312,29 +285,42 @@
         }
 
     .btn-secondary {
-        background: linear-gradient(45deg, #450050, #7a2d8a);
+       background: linear-gradient(45deg, #e753fe, #ff80ff);
         color: white;
-        box-shadow: 0 8px 25px rgba(69, 0, 80, 0.4);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 25px rgba(231, 83, 254, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.3);
     }
 
         .btn-secondary:hover {
             transform: translateY(-3px);
-            box-shadow: 0 12px 30px rgba(69, 0, 80, 0.6);
-            background: linear-gradient(45deg, #7a2d8a, #450050);
+            box-shadow: 0 12px 30px rgba(231, 83, 254, 0.6);
+            background: linear-gradient(45deg, #ff80ff, #e753fe);
         }
 
     .btn-tertiary {
-        background: linear-gradient(45deg, #ff80ff, #ffffff);
-        color: #450050;
-        box-shadow: 0 8px 25px rgba(255, 128, 255, 0.4);
+        background: linear-gradient(45deg, #e753fe, #ff80ff);
+        color: white;
+        box-shadow: 0 8px 25px rgba(231, 83, 254, 0.4);
         border: 1px solid rgba(255, 255, 255, 0.3);
     }
 
         .btn-tertiary:hover {
             transform: translateY(-3px);
-            box-shadow: 0 12px 30px rgba(255, 128, 255, 0.6);
-            background: linear-gradient(45deg, #ffffff, #ff80ff);
+            box-shadow: 0 12px 30px rgba(231, 83, 254, 0.6);
+            background: linear-gradient(45deg, #ff80ff, #e753fe);
+        }
+
+    .btn-Fourth {
+        background: linear-gradient(45deg, #e753fe, #ff80ff);
+        color: white;
+        box-shadow: 0 8px 25px rgba(231, 83, 254, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-Fourth:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(231, 83, 254, 0.6);
+            background: linear-gradient(45deg, #ff80ff, #e753fe);
         }
 
     /* Estadísticas rápidas */
@@ -442,7 +428,7 @@
         align-items: center;
         justify-content: center;
         font-size: 2rem;
-        color: white;
+        color: slateblue;
         box-shadow: 0 8px 20px rgba(231, 83, 254, 0.3);
     }
 
@@ -608,27 +594,7 @@
 </style>
 
 @code {
-    private EstadisticasHome estadisticas = new();
-
-    protected override async Task OnInitializedAsync()
-    {
-        await CargarEstadisticas();
-    }
-
-    private async Task CargarEstadisticas()
-    {
-        // Aquí cargarías datos reales de tu API
-        // Por ahora usamos datos de ejemplo
-        estadisticas = new EstadisticasHome
-        {
-            TotalProductos = 45,
-            TotalVentas = 15250.75m,
-            StockBajo = 3,
-            CarritosActivos = 5,
-            TotalCategorias = 8,
-            VentasHoy = 3
-        };
-    }
+    
 
     private void IrAProductos()
     {
@@ -680,14 +646,9 @@
         Navigation.NavigateTo("/carritos/nuevo");
     }
 
-    // Clase para estadísticas
-    public class EstadisticasHome
+    private void IrACatalogo()
     {
-        public int TotalProductos { get; set; }
-        public decimal TotalVentas { get; set; }
-        public int StockBajo { get; set; }
-        public int CarritosActivos { get; set; }
-        public int TotalCategorias { get; set; }
-        public int VentasHoy { get; set; }
+        Navigation.NavigateTo("/catalogo");
     }
+
 }

@@ -81,9 +81,9 @@ else
                                     </button>
                                 </div>
                             </td>
-                            <td>@carritoProducto.PrecioUnitario.ToString("C")</td>
+                            <td>$@carritoProducto.PrecioUnitario.ToString("N2")</td>
                             <td>
-                                <strong>@((carritoProducto.Cantidad * carritoProducto.PrecioUnitario).ToString("C"))</strong>
+                                <strong>$@((carritoProducto.Cantidad * carritoProducto.PrecioUnitario).ToString("N2"))</strong>
                             </td>
                             <td>
                                 <div class="btn-group btn-group-sm" role="group">
@@ -104,7 +104,7 @@ else
                 <tfoot>
                     <tr class="table-primary">
                         <td colspan="4" class="text-end"><strong>Total General:</strong></td>
-                        <td><strong>@carritoProductosFiltrados.Sum(cp => cp.Cantidad * cp.PrecioUnitario).ToString("C")</strong></td>
+                        <td><strong>$@carritoProductosFiltrados.Sum(cp => cp.Cantidad * cp.PrecioUnitario).ToString("N2")</strong></td>
                         <td></td>
                     </tr>
                 </tfoot>

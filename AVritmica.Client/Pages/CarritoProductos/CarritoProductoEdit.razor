@@ -34,7 +34,7 @@
                     <option value="0">Seleccione un producto</option>
                     @foreach (var producto in productos)
                     {
-                        <option value="@producto.Id">@producto.Nombre - @producto.Precio.ToString("C")</option>
+                        <option value="@producto.Id">@producto.Nombre - $@producto.Precio.ToString("N2")</option>
                     }
                 </InputSelect>
                 @if (carritoProductoDTO.ProductoId == 0)
@@ -60,7 +60,7 @@
             @if (carritoProductoDTO.Cantidad > 0 && carritoProductoDTO.PrecioUnitario > 0)
             {
                 <div class="alert alert-info">
-                    <strong>Subtotal:</strong> @((carritoProductoDTO.Cantidad * carritoProductoDTO.PrecioUnitario).ToString("C"))
+                    <strong>Subtotal:</strong> $@((carritoProductoDTO.Cantidad * carritoProductoDTO.PrecioUnitario).ToString("N2"))
                 </div>
             }
         </div>

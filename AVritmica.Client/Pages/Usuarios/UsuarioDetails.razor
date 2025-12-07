@@ -107,7 +107,7 @@ else
                                             <td>
                                                 <span class="badge @GetEstadoPagoBadgeClass(carrito.EstadoPago)">@carrito.EstadoPago</span>
                                             </td>
-                                            <td>@carrito.MontoTotal.ToString("C")</td>
+                                            <td>$@carrito.MontoTotal.ToString("N2")</td>
                                             <td>@carrito.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</td>
                                             <td>
                                                 <span class="badge bg-secondary">@carrito.CarritoProductos.Count</span>

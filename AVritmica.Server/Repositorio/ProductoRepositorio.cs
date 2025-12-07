@@ -78,12 +78,19 @@ namespace AVritmica.Server.RepositorioImplementacion
             if (productoExistente == null)
                 return false;
 
+            // ACTUALIZAR TODOS LOS CAMPOS (incluyendo los nuevos)
             productoExistente.Nombre = entidad.Nombre;
             productoExistente.Descripcion = entidad.Descripcion;
             productoExistente.Precio = entidad.Precio;
             productoExistente.Stock = entidad.Stock;
             productoExistente.ImagenUrl = entidad.ImagenUrl;
             productoExistente.CategoriaId = entidad.CategoriaId;
+
+            // NUEVOS CAMPOS PARA VARIANTES (¡ESTOS FALTAN!)
+            productoExistente.TieneVariantes = entidad.TieneVariantes;
+            productoExistente.ColoresDisponibles = entidad.ColoresDisponibles;
+            productoExistente.TamaniosDisponibles = entidad.TamaniosDisponibles;
+            productoExistente.ImagenesVariantes = entidad.ImagenesVariantes;
 
             _context.Productos.Update(productoExistente);
             await _context.SaveChangesAsync();

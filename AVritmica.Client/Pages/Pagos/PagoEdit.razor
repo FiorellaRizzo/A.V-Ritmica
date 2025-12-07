@@ -19,7 +19,7 @@
                     <option value="0">Seleccione un carrito</option>
                     @foreach (var carrito in carritos)
                     {
-                        <option value="@carrito.Id">@carrito.Usuario?.Nombre - Total: @carrito.MontoTotal.ToString("C")</option>
+                        <option value="@carrito.Id">@carrito.Usuario?.Nombre - Total: $@carrito.MontoTotal.ToString("N2")</option>
                     }
                 </InputSelect>
                 @if (pagoDTO.CarritoId == 0)
@@ -55,8 +55,8 @@
                 {
                     <div class="form-text">
                         <i class="fas fa-shopping-cart me-1"></i>
-                        Total carrito: @carritoSeleccionado.MontoTotal.ToString("C") |
-                        Saldo pendiente: @saldoPendiente.ToString("C")
+                        Total carrito: $@carritoSeleccionado.MontoTotal.ToString("N2") |
+                        Saldo pendiente: $@saldoPendiente.ToString("N2")
                     </div>
                 }
             </div>

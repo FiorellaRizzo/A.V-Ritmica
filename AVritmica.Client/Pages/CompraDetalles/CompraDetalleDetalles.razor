@@ -117,7 +117,7 @@
                                     <p class="text-muted mb-2">@detalle.Producto.Descripcion</p>
                                     <div class="small">
                                         <span class="text-muted">Precio Actual: </span>
-                                        <span class="fw-bold text-success">@detalle.Producto.Precio.ToString("C2")</span>
+                                        <span class="fw-bold text-success">$@detalle.Producto.Precio.ToString("N2")</span>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -135,7 +135,7 @@
                                         <div class="mb-1">
                                             <span class="text-muted">Precio Venta Actual: </span>
                                             <span class="fw-bold text-success">
-                                                @detalle.Producto.Precio.ToString("C2")
+                                                $@detalle.Producto.Precio.ToString("N2")
                                             </span>
                                         </div>
                                     </div>
@@ -158,7 +158,7 @@
                     <div class="card-body">
                         <div class="text-center mb-4">
                             <div class="display-6 text-primary fw-bold">
-                                @SubtotalCompra.ToString("C2")
+                                $@SubtotalCompra.ToString("N2")
                             </div>
                             <small class="text-muted">Subtotal de Compra</small>
                         </div>
@@ -166,22 +166,22 @@
                         <table class="table table-sm table-borderless">
                             <tr>
                                 <td class="text-muted">Precio Compra Unitario:</td>
-                                <td class="text-end">@detalle.PrecioCompra.ToString("C2")</td>
+                                <td class="text-end">$@detalle.PrecioCompra.ToString("N2")</td>
                             </tr>
                             <tr>
                                 <td class="text-muted">Precio Venta Unitario:</td>
-                                <td class="text-end">@detalle.PrecioVentaActualizado.ToString("C2")</td>
+                                <td class="text-end">$@detalle.PrecioVentaActualizado.ToString("N2")</td>
                             </tr>
                             <tr class="border-top">
                                 <td class="text-muted">Margen por Unidad:</td>
                                 <td class="text-end fw-bold @(MargenUnidad >= 0 ? "text-success" : "text-danger")">
-                                    @MargenUnidad.ToString("C2")
+                                    $@MargenUnidad.ToString("N2")
                                 </td>
                             </tr>
                             <tr>
                                 <td class="text-muted">Margen Total:</td>
                                 <td class="text-end fw-bold @(MargenTotal >= 0 ? "text-success" : "text-danger")">
-                                    @MargenTotal.ToString("C2")
+                                    $@MargenTotal.ToString("N2")
                                 </td>
                             </tr>
                             <tr class="border-top">
@@ -306,7 +306,7 @@
             $"¿Está seguro de eliminar el detalle de compra #{detalle.Id}?\n\n" +
             $"Producto: {detalle.Producto?.Nombre}\n" +
             $"Cantidad: {detalle.Cantidad}\n" +
-            $"Subtotal: {SubtotalCompra.ToString("C2")}\n\n" +
+            $"Subtotal: {SubtotalCompra.ToString("N2")}\n\n" +
             "Esta acción no se puede deshacer.");
 
         if (confirmado)

@@ -1,10 +1,10 @@
 ﻿@page "/productos/nuevo"
 @page "/productos/editar/{Id:int}"
 @using AVritmica.Shared.DTO
+@using AVritmica.BD.Data.Entity
 @inject IProductoService ProductoService
 @inject ICategoriaService CategoriaService
 @inject NavigationManager Navigation
-@inject IJSRuntime JS
 
 <h3>@Titulo</h3>
 
@@ -12,39 +12,41 @@
     <DataAnnotationsValidator />
     <ValidationSummary />
 
-    <div class="form-group">
-        <label for="nombre">Nombre *</label>
-        <InputText id="nombre" @bind-Value="producto.Nombre" class="form-control" />
+    <!-- Campos básicos -->
+    <div class="mb-3">
+        <label class="form-label">Nombre *</label>
+        <InputText @bind-Value="producto.Nombre" class="form-control" />
         <ValidationMessage For="@(() => producto.Nombre)" />
     </div>
 
-    <div class="form-group">
-        <label for="descripcion">Descripción</label>
-        <InputTextArea id="descripcion" @bind-Value="producto.Descripcion" class="form-control" />
+    <div class="mb-3">
+        <label class="form-label">Descripción</label>
+        <InputTextArea @bind-Value="producto.Descripcion" class="form-control" rows="3" />
         <ValidationMessage For="@(() => producto.Descripcion)" />
     </div>
 
-    <div class="form-group">
-        <label for="precio">Precio *</label>
-        <InputNumber id="precio" @bind-Value="producto.Precio" class="form-control" />
-        <ValidationMessage For="@(() => producto.Precio)" />
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label class="form-label">Precio *</label>
+            <InputNumber @bind-Value="producto.Precio" class="form-control" />
+            <ValidationMessage For="@(() => producto.Precio)" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Stock *</label>
+            <InputNumber @bind-Value="producto.Stock" class="form-control" />
+            <ValidationMessage For="@(() => producto.Stock)" />
+        </div>
     </div>
 
-    <div class="form-group">
-        <label for="stock">Stock *</label>
-        <InputNumber id="stock" @bind-Value="producto.Stock" class="form-control" />
-        <ValidationMessage For="@(() => producto.Stock)" />
-    </div>
-
-    <div class="form-group">
-        <label for="imagenUrl">URL de Imagen</label>
-        <InputText id="imagenUrl" @bind-Value="producto.ImagenUrl" class="form-control" />
+    <div class="mb-3">
+        <label class="form-label">URL de Imagen Principal</label>
+        <InputText @bind-Value="producto.ImagenUrl" class="form-control" />
         <ValidationMessage For="@(() => producto.ImagenUrl)" />
     </div>
 
-    <div class="form-group">
-        <label for="categoriaId">Categoría *</label>
-        <InputSelect id="categoriaId" @bind-Value="producto.CategoriaId" class="form-control">
+    <div class="mb-3">
+        <label class="form-label">Categoría *</label>
+        <InputSelect @bind-Value="producto.CategoriaId" class="form-control">
             <option value="">Seleccione una categoría</option>
             @foreach (var categoria in categorias)
             {
@@ -54,29 +56,157 @@
         <ValidationMessage For="@(() => producto.CategoriaId)" />
     </div>
 
-    <div class="mt-3">
+    <!-- ============================================= -->
+    <!-- SECCIÓN DE VARIANTES - ESTO ES LO NUEVO -->
+    <!-- ============================================= -->
+    <div class="card mb-4 border-primary">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                <i class="fas fa-palette me-2"></i>Opciones y Variantes
+            </h5>
+        </div>
+        <div class="card-body">
+            <!-- Switch para activar variantes -->
+            <div class="form-check form-switch mb-4">
+                <InputCheckbox @bind-Value="producto.TieneVariantes" class="form-check-input" id="toggleVariantes" />
+                <label class="form-check-label fw-bold" for="toggleVariantes" style="color: #450050; font-size: 1.1rem;">
+                    Este producto tiene diferentes colores, tamaños o variantes
+                </label>
+            </div>
+
+            <!-- Campos que SOLO aparecen si TieneVariantes es TRUE -->
+            @if (producto.TieneVariantes)
+            {
+                <div class="variantes-section p-3 border rounded" style="background-color: #f8f9fa;">
+                    <h6 class="mb-3" style="color: #450050;">
+                        <i class="fas fa-cogs me-2"></i>Configurar Variantes
+                    </h6>
+
+                    <!-- Colores disponibles -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="fas fa-palette me-1 text-primary"></i>Colores disponibles
+                        </label>
+                        <InputTextArea @bind-Value="producto.ColoresDisponibles"
+                                       class="form-control"
+                                       rows="2"
+                                       placeholder="Ej: Rojo, Azul, Verde, Rosa, Dorado" />
+                        <small class="text-muted">Separar cada color con una coma. Ejemplo: "Rojo, Azul, Verde"</small>
+                    </div>
+
+                    <!-- Tamaños disponibles -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="fas fa-expand-alt me-1 text-primary"></i>Tamaños disponibles
+                        </label>
+                        <InputTextArea @bind-Value="producto.TamaniosDisponibles"
+                                       class="form-control"
+                                       rows="2"
+                                       placeholder="Ej: S, M, L, XL o 18cm, 19cm, 20cm" />
+                        <small class="text-muted">Separar cada tamaño con una coma. Ejemplo: "S, M, L"</small>
+                    </div>
+
+                    <!-- Imágenes de variantes -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="fas fa-images me-1 text-primary"></i>Imágenes para cada variante
+                        </label>
+                        <InputTextArea @bind-Value="producto.ImagenesVariantes"
+                                       class="form-control"
+                                       rows="3"
+                                       placeholder="https://ejemplo.com/imagen-rojo.jpg, https://ejemplo.com/imagen-azul.jpg" />
+                        <small class="text-muted">URLs de imágenes separadas por comas. Una por cada variante.</small>
+                    </div>
+
+                    <!-- Resumen de lo configurado -->
+                    <div class="alert alert-info mt-3">
+                        <h6><i class="fas fa-info-circle me-2"></i>Resumen de variantes configuradas:</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Colores:</strong><br>
+                                @if (!string.IsNullOrEmpty(producto.ColoresDisponibles))
+                                {
+                                    <div class="d-flex flex-wrap gap-1 mt-1">
+                                        @foreach (var color in producto.ColoresDisponibles.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                                        {
+                                            <span class="badge bg-primary">@color.Trim()</span>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">No definidos</span>
+                                }
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Tamaños:</strong><br>
+                                @if (!string.IsNullOrEmpty(producto.TamaniosDisponibles))
+                                {
+                                    <div class="d-flex flex-wrap gap-1 mt-1">
+                                        @foreach (var tam in producto.TamaniosDisponibles.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                                        {
+                                            <span class="badge bg-secondary">@tam.Trim()</span>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">No definidos</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-light">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    <strong>¿Tu producto tiene opciones?</strong><br>
+                    Si activas esta opción, los clientes podrán seleccionar entre diferentes colores,
+                    tamaños o versiones de este producto al realizar su compra.
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Botones -->
+    <div class="mt-4">
         <button type="submit" class="btn btn-primary" disabled="@cargando">
-            @(cargando ? "Guardando..." : "Guardar")
+            @if (cargando)
+            {
+                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                
+            }
+            else
+            {
+                <i class="fas fa-save me-2"></i>
+                @(Id == 0 ? "Crear Producto" : "Actualizar Producto")
+            }
         </button>
-        <button type="button" class="btn btn-secondary" @onclick="Cancelar" disabled="@cargando">
-            Cancelar
+        <button type="button" class="btn btn-secondary ms-2" @onclick="Cancelar" disabled="@cargando">
+            <i class="fas fa-times me-2"></i>Cancelar
         </button>
     </div>
 </EditForm>
 
 @if (!string.IsNullOrEmpty(mensajeError))
 {
-    <div class="alert alert-danger mt-3">@mensajeError</div>
+    <div class="alert alert-danger mt-3">
+        <i class="fas fa-exclamation-triangle me-2"></i>@mensajeError
+    </div>
 }
 
 @if (!string.IsNullOrEmpty(mensajeExito))
 {
-    <div class="alert alert-success mt-3">@mensajeExito</div>
+    <div class="alert alert-success mt-3">
+        <i class="fas fa-check-circle me-2"></i>@mensajeExito
+    </div>
 }
 
 @code {
     [Parameter]
-    public int Id { get; set; }  // <- ESTA LÍNEA FALTABA
+    public int Id { get; set; }
 
     private CrearProductoDTO producto = new();
     private List<Categoria> categorias = new();
@@ -95,9 +225,10 @@
         }
         else
         {
-            // Inicializar valores por defecto para nuevo producto
+            // Valores por defecto para nuevo producto
             producto.Stock = 0;
             producto.Precio = 0;
+            producto.TieneVariantes = false; // Empieza desactivado
         }
     }
 
@@ -146,7 +277,12 @@
                     Precio = productoExistente.Precio,
                     Stock = productoExistente.Stock,
                     ImagenUrl = productoExistente.ImagenUrl,
-                    CategoriaId = productoExistente.CategoriaId
+                    CategoriaId = productoExistente.CategoriaId,
+                    // NUEVOS CAMPOS
+                    TieneVariantes = productoExistente.TieneVariantes,
+                    ColoresDisponibles = productoExistente.ColoresDisponibles ?? "",
+                    TamaniosDisponibles = productoExistente.TamaniosDisponibles ?? "",
+                    ImagenesVariantes = productoExistente.ImagenesVariantes ?? ""
                 };
             }
             else
@@ -176,13 +312,20 @@
 
         try
         {
+            Console.WriteLine("💾 GUARDANDO PRODUCTO:");
+            Console.WriteLine($"- Nombre: {producto.Nombre}");
+            Console.WriteLine($"- Tiene variantes: {producto.TieneVariantes}");
+            Console.WriteLine($"- Colores: {producto.ColoresDisponibles}");
+            Console.WriteLine($"- Tamaños: {producto.TamaniosDisponibles}");
+            Console.WriteLine($"- Imágenes variantes: {producto.ImagenesVariantes}");
+
             if (Id == 0)
             {
                 // Crear nuevo producto
                 var respuesta = await ProductoService.CreateProducto(producto);
                 if (!respuesta.Error)
                 {
-                    mensajeExito = "Producto creado exitosamente";
+                    mensajeExito = "✅ Producto creado exitosamente";
                     await Task.Delay(1500);
                     Navigation.NavigateTo("/productos");
                 }
@@ -206,13 +349,18 @@
                     Precio = producto.Precio,
                     Stock = producto.Stock,
                     ImagenUrl = producto.ImagenUrl,
-                    CategoriaId = producto.CategoriaId
+                    CategoriaId = producto.CategoriaId,
+                    // NUEVOS CAMPOS
+                    TieneVariantes = producto.TieneVariantes,
+                    ColoresDisponibles = producto.ColoresDisponibles,
+                    TamaniosDisponibles = producto.TamaniosDisponibles,
+                    ImagenesVariantes = producto.ImagenesVariantes
                 };
 
                 var respuesta = await ProductoService.UpdateProducto(Id, productoActualizado);
                 if (!respuesta.Error)
                 {
-                    mensajeExito = "Producto actualizado exitosamente";
+                    mensajeExito = "✅ Producto actualizado exitosamente";
                     await Task.Delay(1500);
                     Navigation.NavigateTo("/productos");
                 }
@@ -229,6 +377,7 @@
         catch (Exception ex)
         {
             mensajeError = $"Error: {ex.Message}";
+            Console.WriteLine($"❌ ERROR: {ex.Message}");
         }
 
         cargando = false;
@@ -240,3 +389,38 @@
         Navigation.NavigateTo("/productos");
     }
 }
+
+<style>
+    /* Estilo para el switch */
+    .form-check-input:checked {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+
+    .form-check-input:focus {
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+
+    /* Animación suave para mostrar/ocultar variantes */
+    .variantes-section {
+        animation: fadeIn 0.3s ease;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Estilo para los badges de colores y tamaños */
+    .badge.bg-primary, .badge.bg-secondary {
+        font-size: 0.8rem;
+        padding: 4px 8px;
+    }
+</style>

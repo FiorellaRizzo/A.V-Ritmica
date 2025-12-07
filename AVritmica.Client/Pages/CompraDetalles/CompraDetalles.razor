@@ -94,7 +94,7 @@
                 <div class="card bg-info text-white">
                     <div class="card-body text-center">
                         <h6 class="card-title">Total Compra</h6>
-                        <h4>@estadisticas.TotalCompra.ToString("C2")</h4>
+                        <h4>$@estadisticas.TotalCompra.ToString("N2")</h4>
                     </div>
                 </div>
             </div>
@@ -162,10 +162,10 @@
                                     <td class="text-center">
                                         <span class="badge bg-primary rounded-pill">@detalle.Cantidad</span>
                                     </td>
-                                    <td class="text-end">@detalle.PrecioCompra.ToString("C2")</td>
-                                    <td class="text-end">@detalle.PrecioVentaActualizado.ToString("C2")</td>
+                                    <td class="text-end">$@detalle.PrecioCompra.ToString("N2")</td>
+                                    <td class="text-end">$@detalle.PrecioVentaActualizado.ToString("N2")</td>
                                     <td class="text-end fw-bold text-success">
-                                        @((detalle.Cantidad * detalle.PrecioCompra).ToString("C2"))
+                                        $@((detalle.Cantidad * detalle.PrecioCompra).ToString("N2"))
                                     </td>
                                     <td class="text-center">
                                         <div class="btn-group btn-group-sm" role="group">
@@ -191,7 +191,7 @@
                                     <td class="text-center fw-bold">@compraDetalles.Sum(x => x.Cantidad)</td>
                                     <td colspan="2"></td>
                                     <td class="text-end fw-bold text-success fs-5">
-                                        @compraDetalles.Sum(x => x.Cantidad * x.PrecioCompra).ToString("C2")
+                                        $@compraDetalles.Sum(x => x.Cantidad * x.PrecioCompra).ToString("N2")
                                     </td>
                                     <td></td>
                                 </tr>
@@ -257,7 +257,7 @@
                             <div class="col-md-4">
                                 <div class="card border-info">
                                     <div class="card-body text-center">
-                                        <h3 class="text-info">@estadisticas.TotalCompra.ToString("C2")</h3>
+                                        <h3 class="text-info">$@estadisticas.TotalCompra.ToString("N2")</h3>
                                         <p class="mb-0">Inversión Total</p>
                                     </div>
                                 </div>
@@ -282,7 +282,7 @@
                                             <td>@producto.Nombre</td>
                                             <td class="text-center">@producto.Cantidad</td>
                                             <td class="text-end">@(producto.Subtotal / producto.Cantidad).ToString("C2")</td>
-                                            <td class="text-end fw-bold">@producto.Subtotal.ToString("C2")</td>
+                                            <td class="text-end fw-bold">$@producto.Subtotal.ToString("N2")</td>
                                         </tr>
                                     }
                                 </tbody>
@@ -291,7 +291,7 @@
                                         <th>TOTAL</th>
                                         <th class="text-center">@estadisticas.TotalUnidades</th>
                                         <th></th>
-                                        <th class="text-end">@estadisticas.TotalCompra.ToString("C2")</th>
+                                        <th class="text-end">$@estadisticas.TotalCompra.ToString("N2")</th>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -422,7 +422,7 @@
             $"¿Está seguro de eliminar el detalle de compra?\n\n" +
             $"Producto: {detalle.Producto?.Nombre}\n" +
             $"Cantidad: {detalle.Cantidad}\n" +
-            $"Precio: {detalle.PrecioCompra.ToString("C2")}\n\n" +
+            $"Precio: {detalle.PrecioCompra.ToString("N2")}\n\n" +
             "Esta acción no se puede deshacer.");
 
         if (confirmado)

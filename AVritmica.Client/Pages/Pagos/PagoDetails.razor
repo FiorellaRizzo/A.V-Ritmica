@@ -44,7 +44,7 @@ else
                         </tr>
                         <tr>
                             <td class="text-muted"><strong>Monto:</strong></td>
-                            <td class="text-success fw-bold fs-5">@pago.MontoPagado.ToString("C")</td>
+                            <td class="text-success fw-bold fs-5">$@pago.MontoPagado.ToString("N2")</td>
                         </tr>
                         <tr>
                             <td class="text-muted"><strong>Estado:</strong></td>
@@ -55,7 +55,7 @@ else
                         <tr>
                             <td class="text-muted"><strong>Saldo:</strong></td>
                             <td class="@(pago.Saldo > 0 ? "text-warning" : "text-success") fw-bold">
-                                @pago.Saldo.ToString("C")
+                                $@pago.Saldo.ToString("N2")
                             </td>
                         </tr>
                     </table>
@@ -82,7 +82,7 @@ else
                         </tr>
                         <tr>
                             <td class="text-muted"><strong>Total Carrito:</strong></td>
-                            <td class="fw-bold">@pago.Carrito?.MontoTotal.ToString("C")</td>
+                            <td class="fw-bold">$@pago.Carrito?.MontoTotal.ToString("N2")</td>
                         </tr>
                         <tr>
                             <td class="text-muted"><strong>Estado Carrito:</strong></td>
@@ -127,9 +127,9 @@ else
                                             <td class="text-center">
                                                 <span class="badge bg-primary">@item.Cantidad</span>
                                             </td>
-                                            <td class="text-end">@item.PrecioUnitario.ToString("C")</td>
+                                            <td class="text-end">$@item.PrecioUnitario.ToString("N2")</td>
                                             <td class="text-end">
-                                                <strong class="text-success">@((item.Cantidad * item.PrecioUnitario).ToString("C"))</strong>
+                                                <strong class="text-success">$@((item.Cantidad * item.PrecioUnitario).ToString("N2"))</strong>
                                             </td>
                                         </tr>
                                     }
@@ -138,7 +138,7 @@ else
                                     <tr>
                                         <td colspan="3" class="text-end"><strong>Total:</strong></td>
                                         <td class="text-end">
-                                            <strong class="fs-5">@pago.Carrito.MontoTotal.ToString("C")</strong>
+                                            <strong class="fs-5">$@pago.Carrito.MontoTotal.ToString("N2")</strong>
                                         </td>
                                     </tr>
                                 </tfoot>

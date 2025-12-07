@@ -106,7 +106,7 @@ else
                                 <span class="badge bg-info">@compra.CompraDetalles.Sum(cd => cd.Cantidad)</span>
                             </td>
                             <td>
-                                <strong>@compra.CompraDetalles.Sum(cd => cd.Cantidad * cd.PrecioCompra).ToString("C")</strong>
+                                <strong>$@compra.CompraDetalles.Sum(cd => cd.Cantidad * cd.PrecioCompra).ToString("N2")</strong>
                             </td>
                             <td>
                                 <div class="btn-group btn-group-sm" role="group">
@@ -132,7 +132,7 @@ else
                         <td colspan="2" class="text-end"><strong>Total General:</strong></td>
                         <td><strong>@comprasFiltradas.Sum(c => c.CompraDetalles.Count)</strong></td>
                         <td><strong>@comprasFiltradas.Sum(c => c.CompraDetalles.Sum(cd => cd.Cantidad))</strong></td>
-                        <td><strong>@comprasFiltradas.Sum(c => c.CompraDetalles.Sum(cd => cd.Cantidad * cd.PrecioCompra)).ToString("C")</strong></td>
+                        <td><strong>$@comprasFiltradas.Sum(c => c.CompraDetalles.Sum(cd => cd.Cantidad * cd.PrecioCompra)).ToString("N2")</strong></td>
                         <td></td>
                     </tr>
                 </tfoot>
@@ -144,7 +144,7 @@ else
             <strong>Resumen:</strong>
             @comprasFiltradas.Count compras -
             @comprasFiltradas.Sum(c => c.CompraDetalles.Count) productos -
-            Total: @comprasFiltradas.Sum(c => c.CompraDetalles.Sum(cd => cd.Cantidad * cd.PrecioCompra)).ToString("C")
+            Total: $@comprasFiltradas.Sum(c => c.CompraDetalles.Sum(cd => cd.Cantidad * cd.PrecioCompra)).ToString("N2")
         </div>
     }
     else
@@ -304,7 +304,7 @@ else
             $"¿Está seguro de eliminar la compra del {compra.FechaCompra.ToString("dd/MM/yyyy")}?\n\n" +
             $"Descripción: {compra.Descripcion ?? "Sin descripción"}\n" +
             $"Productos: {compra.CompraDetalles.Count}\n" +
-            $"Total: {compra.CompraDetalles.Sum(cd => cd.Cantidad * cd.PrecioCompra).ToString("C")}\n\n" +
+            $"Total: {compra.CompraDetalles.Sum(cd => cd.Cantidad * cd.PrecioCompra).ToString("N2")}\n\n" +
             "Esta acción eliminará todos los productos asociados y no se puede deshacer.");
 
         if (confirmado)

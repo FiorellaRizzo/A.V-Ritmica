@@ -95,12 +95,16 @@ else
                                 }
                             </td>
                             <td class="text-success">
-                                <strong>@producto.Precio.ToString("C")</strong>
+                                <strong>$@producto.Precio.ToString("N2")</strong>
                             </td>
                             <td>
-                                @if (producto.Stock > 0)
+                                @if (producto.Stock >= 20)
                                 {
                                     <span class="badge badge-success">@producto.Stock</span>
+                                }
+                                else if (producto.Stock >= 5)
+                                {
+                                    <span class="badge badge-warning">@producto.Stock</span>
                                 }
                                 else
                                 {

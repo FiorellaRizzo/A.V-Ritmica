@@ -43,7 +43,7 @@ else
                     <p><strong>Producto:</strong> @carritoProducto.Producto?.Nombre</p>
                     <p><strong>Categoría:</strong> @carritoProducto.Producto?.Categoria?.Nombre</p>
                     <p><strong>Descripción:</strong> @carritoProducto.Producto?.Descripcion</p>
-                    <p><strong>Precio Original:</strong> @carritoProducto.Producto?.Precio.ToString("C")</p>
+                    <p><strong>Precio Original:</strong> $@carritoProducto.Producto?.Precio.ToString("N2")</p>
                 </div>
             </div>
 
@@ -53,14 +53,14 @@ else
                 <div class="col-md-6">
                     <h6>Detalles de la Transacción</h6>
                     <p><strong>Cantidad:</strong> @carritoProducto.Cantidad</p>
-                    <p><strong>Precio Unitario:</strong> @carritoProducto.PrecioUnitario.ToString("C")</p>
+                    <p><strong>Precio Unitario:</strong> $@carritoProducto.PrecioUnitario.ToString("N2")</p>
                 </div>
                 <div class="col-md-6">
                     <h6>Resumen</h6>
                     <div class="alert alert-success">
                         <h6 class="alert-heading">Subtotal</h6>
-                        <h4>@((carritoProducto.Cantidad * carritoProducto.PrecioUnitario).ToString("C"))</h4>
-                        <small class="mb-0">@carritoProducto.Cantidad x @carritoProducto.PrecioUnitario.ToString("C")</small>
+                        <h4>$@((carritoProducto.Cantidad * carritoProducto.PrecioUnitario).ToString("N2"))</h4>
+                        <small class="mb-0">$@carritoProducto.Cantidad x @carritoProducto.PrecioUnitario.ToString("N2")</small>
                     </div>
                 </div>
             </div>

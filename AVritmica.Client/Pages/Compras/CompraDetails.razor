@@ -81,7 +81,7 @@ else
                         </div>
                     </div>
                     <div class="text-center">
-                        <h3 class="text-success">@compra.CompraDetalles.Sum(cd => cd.Cantidad * cd.PrecioCompra).ToString("C")</h3>
+                        <h3 class="text-success">$@compra.CompraDetalles.Sum(cd => cd.Cantidad * cd.PrecioCompra).ToString("N2")</h3>
                         <small class="text-muted">Total de la compra</small>
                     </div>
                 </div>
@@ -130,9 +130,9 @@ else
                                             <td class="text-center">
                                                 <span class="badge bg-primary rounded-pill">@detalle.Cantidad</span>
                                             </td>
-                                            <td class="text-end">@detalle.PrecioCompra.ToString("C")</td>
+                                            <td class="text-end">$@detalle.PrecioCompra.ToString("N2")</td>
                                             <td class="text-end">
-                                                <strong class="text-success">@((detalle.Cantidad * detalle.PrecioCompra).ToString("C"))</strong>
+                                                <strong class="text-success">$@((detalle.Cantidad * detalle.PrecioCompra).ToString("N2"))</strong>
                                             </td>
                                         </tr>
                                     }
@@ -142,7 +142,7 @@ else
                                         <td colspan="3"></td>
                                         <td class="text-end"><strong>Total:</strong></td>
                                         <td class="text-end">
-                                            <strong class="fs-5">@compra.CompraDetalles.Sum(cd => cd.Cantidad * cd.PrecioCompra).ToString("C")</strong>
+                                            <strong class="fs-5">$@compra.CompraDetalles.Sum(cd => cd.Cantidad * cd.PrecioCompra).ToString("N2")</strong>
                                         </td>
                                     </tr>
                                 </tfoot>
