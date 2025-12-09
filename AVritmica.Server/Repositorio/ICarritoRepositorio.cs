@@ -19,5 +19,19 @@ namespace AVritmica.Server.Repositorio
         Task<bool> ActualizarEstadoPago(int id, string estadoPago);
         Task<bool> ConfirmarCarrito(int id, decimal montoTotal, string direccionEnvio);
         Task<bool> ActualizarMontoTotal(int id, decimal montoTotal);
+
+     
+
+        // NUEVOS MÉTODOS PARA ITEMS DEL CARRITO
+        Task<bool> AgregarProductoAlCarrito(int carritoId, int productoId, int cantidad,
+                decimal precioUnitario, string? color = null, string? tamaño = null);
+
+        Task<bool> ActualizarCantidadProducto(int carritoId, int productoId, int cantidad,
+                string? color = null, string? tamaño = null);
+
+        Task<bool> EliminarProductoDelCarrito(int carritoId, int productoId,
+                string? color = null, string? tamaño = null);
+
+        Task<bool> VaciarCarrito(int carritoId);
+        }
     }
-}

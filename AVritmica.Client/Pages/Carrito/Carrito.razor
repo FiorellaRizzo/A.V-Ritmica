@@ -1,0 +1,622 @@
+﻿@page "/carrito"
+@using AVritmica.Shared.DTO
+@using AVritmica.Client.Servicios.Entidades
+@inject ICarritoServicio CarritoService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<PageTitle>AVritmica - Carrito de Compras</PageTitle>
+
+<div class="container py-5">
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-violet-gradient mb-0">
+            <i class="fas fa-shopping-cart me-2"></i> Mi Carrito
+        </h2>
+        <span class="badge bg-violet rounded-pill px-3 py-2">
+            @(items?.Sum(i => i.Cantidad) ?? 0) items
+        </span>
+    </div>
+
+    <!-- Mensajes de estado -->
+    @if (mensajeError != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i> @mensajeError
+            <button type="button" class="btn-close" @onclick="() => mensajeError = null"></button>
+        </div>
+    }
+
+    @if (mensajeExito != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i> @mensajeExito
+            <button type="button" class="btn-close" @onclick="() => mensajeExito = null"></button>
+        </div>
+    }
+
+    @if (cargando)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border" style="color: #e753fe; width: 3rem; height: 3rem;" role="status">
+                <span class="visually-hidden">Cargando carrito...</span>
+            </div>
+            <p class="mt-3" style="color: #450050;">Cargando tu carrito de compras...</p>
+        </div>
+    }
+    else if (items == null || !items.Any())
+    {
+        <!-- Carrito vacío -->
+        <div class="text-center py-5 my-5">
+            <div class="empty-cart-icon mb-4">
+                <i class="fas fa-shopping-basket fa-5x text-violet-light"></i>
+            </div>
+            <h3 class="text-muted mb-3">Tu carrito está vacío</h3>
+            <p class="text-muted mb-4">
+                ¡Descubre los mejores productos de gimnasia rítmica y comienza tu compra!
+            </p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="/catalogo" class="btn btn-violet-gradient btn-lg">
+                    <i class="fas fa-store me-2"></i> Ver Catálogo
+                </a>
+               
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <!-- Lista de productos (Columna izquierda) -->
+            <div class="col-lg-8">
+                @foreach (var item in items)
+                {
+                    <div class="card mb-3 border-violet shadow-sm">
+                        <div class="row g-0">
+                            <!-- Imagen del producto -->
+                            <div class="col-md-3 col-4">
+                                @if (!string.IsNullOrEmpty(item.ProductoImagen))
+                                {
+                                    <img src="@item.ProductoImagen"
+                                         class="img-fluid rounded-start h-100"
+                                         style="object-fit: cover; min-height: 150px;"
+                                         alt="@item.ProductoNombre"
+                                         onerror="this.src='https://via.placeholder.com/300x200/450050/ffffff?text=Producto'">
+                                }
+                                else
+                                {
+                                    <div class="d-flex align-items-center justify-content-center bg-light h-100">
+                                        <i class="fas fa-image fa-2x text-muted"></i>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Detalles del producto -->
+                            <div class="col-md-9 col-8">
+                                <div class="card-body py-3">
+                                    <!-- Título y botón eliminar -->
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h5 class="card-title mb-1" style="color: #450050;">@item.ProductoNombre</h5>
+                                            <p class="card-text text-muted small mb-0">
+                                                @item.CategoriaNombre
+                                            </p>
+                                        </div>
+                                        <button class="btn btn-link text-danger p-0"
+                                                @onclick="() => EliminarItem(item)"
+                                                title="Eliminar del carrito">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+
+                                    <!-- Variantes -->
+                                    @if (!string.IsNullOrEmpty(item.Color) || !string.IsNullOrEmpty(item.Tamaño))
+                                    {
+                                        <div class="mb-3">
+                                            @if (!string.IsNullOrEmpty(item.Color))
+                                            {
+                                                <span class="badge me-2" style="background: #e753fe; color: white;">
+                                                    <i class="fas fa-palette me-1"></i> @item.Color
+                                                </span>
+                                            }
+                                            @if (!string.IsNullOrEmpty(item.Tamaño))
+                                            {
+                                                <span class="badge" style="background: #450050; color: white;">
+                                                    <i class="fas fa-ruler me-1"></i> @item.Tamaño
+                                                </span>
+                                            }
+                                        </div>
+                                    }
+
+                                    <!-- Stock -->
+                                    <div class="mb-3">
+                                        <small class="text-muted">
+                                            Stock disponible:
+                                            <span class="@(item.TieneStockSuficiente ? "text-success fw-bold" : "text-danger fw-bold")">
+                                                @item.StockDisponible unidades
+                                            </span>
+                                            @if (!item.TieneStockSuficiente)
+                                            {
+                                                <span class="badge bg-warning text-dark ms-2">
+                                                    <i class="fas fa-exclamation-triangle me-1"></i> Stock insuficiente
+                                                </span>
+                                            }
+                                        </small>
+                                    </div>
+
+                                    <!-- Cantidad y precios -->
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <!-- Selector de cantidad -->
+                                        <div class="d-flex align-items-center">
+                                            <button class="btn btn-sm btn-outline-violet rounded-circle"
+                                                    @onclick="() => ActualizarCantidad(item, -1)"
+                                                    disabled="@(item.Cantidad <= 1 || actualizandoCantidad)">
+                                                <i class="fas fa-minus"></i>
+                                            </button>
+
+                                            <span class="mx-3 fw-bold">@item.Cantidad</span>
+
+                                            <button class="btn btn-sm btn-outline-violet rounded-circle"
+                                                    @onclick="() => ActualizarCantidad(item, 1)"
+                                                    disabled="@(item.Cantidad >= item.StockDisponible || actualizandoCantidad)">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
+
+                                        <!-- Precio unitario -->
+                                        <div class="text-center">
+                                            <div class="text-muted small">Precio unitario</div>
+                                            <div class="fw-bold" style="color: #450050;">$@item.PrecioUnitario.ToString("N2")</div>
+                                        </div>
+
+                                        <!-- Subtotal -->
+                                        <div class="text-end">
+                                            <div class="text-muted small">Subtotal</div>
+                                            <div class="h5 fw-bold" style="color: #e753fe;">$@item.Subtotal.ToString("N2")</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Botones de acción del carrito -->
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="/catalogo" class="btn btn-outline-violet">
+                        <i class="fas fa-arrow-left me-2"></i> Continuar Comprando
+                    </a>
+
+                    <div>
+                        <button class="btn btn-outline-danger me-2" @onclick="VaciarCarrito" disabled="@actualizandoCantidad">
+                            <i class="fas fa-trash me-2"></i> Vaciar Carrito
+                        </button>
+
+                        <button class="btn btn-violet-gradient" @onclick="ActualizarCarrito" disabled="@actualizandoCantidad">
+                            <i class="fas fa-sync-alt me-2"></i> Actualizar Carrito
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resumen del pedido (Columna derecha) -->
+            <div class="col-lg-4">
+                <div class="card border-violet shadow-sm sticky-top" style="top: 20px;">
+                    <div class="card-header bg-gradient-violet text-white">
+                        <h4 class="mb-0">
+                            <i class="fas fa-receipt me-2"></i> Resumen del Pedido
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <!-- Productos en el carrito -->
+                        <div class="mb-4">
+                            <h6>Productos en el carrito</h6>
+                            <div class="small">
+                                @foreach (var item in items.Take(3))
+                                {
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <div class="text-truncate" style="max-width: 70%;">
+                                            @item.ProductoNombre
+                                            <br>
+                                            <small class="text-muted">
+                                                @item.Cantidad x $@item.PrecioUnitario.ToString("N2")
+                                                @if (!string.IsNullOrEmpty(item.Color) || !string.IsNullOrEmpty(item.Tamaño))
+                                                {
+                                                    <br>
+                                                    <small>
+                                                        @item.Color @(!string.IsNullOrEmpty(item.Tamaño) ? $" | {item.Tamaño}" : "")
+                                                    </small>
+                                                }
+                                            </small>
+                                        </div>
+                                        <div class="text-end">
+                                            <small>$@item.Subtotal.ToString("N2")</small>
+                                        </div>
+                                    </div>
+                                }
+                                @if (items.Count > 3)
+                                {
+                                    <div class="text-center mt-2">
+                                        <small class="text-muted">
+                                            + @(items.Count - 3) producto(s) más
+                                        </small>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Resumen de precios -->
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Subtotal:</span>
+                                <span class="fw-bold">$@items.Sum(i => i.Subtotal).ToString("N2")</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Envío:</span>
+                                <span class="text-success">
+                                    <i class="fas fa-check-circle me-1"></i> Gratis
+                                </span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Descuento:</span>
+                                <span>$0.00</span>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Total -->
+                        <div class="d-flex justify-content-between mb-4">
+                            <h5 class="mb-0">Total:</h5>
+                            <h4 class="text-violet mb-0">$@items.Sum(i => i.Subtotal).ToString("N2")</h4>
+                        </div>
+
+                        <!-- Botón de checkout -->
+                        <div class="d-grid">
+                            <button class="btn btn-violet-gradient btn-lg"
+                                    @onclick="ProcederCheckout"
+                                    disabled="@(!items.Any() || actualizandoCantidad || items.Any(i => !i.TieneStockSuficiente))">
+                                <i class="fas fa-lock me-2"></i> Finalizar Compra
+                            </button>
+                        </div>
+
+                        <!-- Información de seguridad -->
+                        <div class="mt-3 text-center">
+                            <small class="text-muted">
+                                <i class="fas fa-shield-alt me-1"></i>
+                                Compra 100% segura |
+                                <i class="fas fa-truck me-1"></i>
+                                Envío gratis
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Promoción -->
+                <div class="card mt-3 border-violet shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-gift fa-2x mb-2" style="color: #e753fe;"></i>
+                        <h6 class="text-violet">¡Envío Gratis!</h6>
+                        <small class="text-muted">
+                            En compras mayores a $50.000. Aprovecha esta oferta.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    // Variables de estado
+    private List<CarritoItemDTO> items = new();
+    private bool cargando = true;
+    private bool actualizandoCantidad = false;
+    private string? mensajeError;
+    private string? mensajeExito;
+
+    // TODO: Reemplazar con usuario real cuando implementes autenticación
+    private int usuarioId = 1;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCarrito();
+    }
+
+    
+    /// Carga los items del carrito desde el servicio
+   
+    private async Task CargarCarrito()
+    {
+        cargando = true;
+        mensajeError = null;
+
+        try
+        {
+            Console.WriteLine("🛒 Cargando carrito...");
+
+            // Llamar al servicio para obtener los items
+            var respuesta = await CarritoService.ObtenerItemsCarrito();
+
+            if (!respuesta.Error && respuesta.Respuesta != null)
+            {
+                items = respuesta.Respuesta;
+                Console.WriteLine($"✅ Carrito cargado: {items.Count} productos");
+            }
+            else if (respuesta.Error)
+            {
+                // Si hay un error, podría ser que el carrito esté vacío
+                items = new List<CarritoItemDTO>();
+                Console.WriteLine("ℹ️ Carrito vacío o error al cargar");
+            }
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"Error al cargar el carrito: {ex.Message}";
+            Console.WriteLine($"❌ Error en CargarCarrito: {ex.Message}");
+            Console.WriteLine($"❌ StackTrace: {ex.StackTrace}");
+        }
+        finally
+        {
+            cargando = false;
+            StateHasChanged();
+        }
+    }
+
+    
+    /// Actualiza la cantidad de un item en el carrito
+    
+    private async Task ActualizarCantidad(CarritoItemDTO item, int cambio)
+    {
+        actualizandoCantidad = true;
+        mensajeError = null;
+
+        try
+        {
+            var nuevaCantidad = item.Cantidad + cambio;
+
+            if (nuevaCantidad < 1)
+                nuevaCantidad = 1;
+
+            // Ya no validamos con StockDisponible del cliente.
+            // Dejamos que lo valide el backend y nos devuelva error si no hay stock.
+
+            var respuesta = await CarritoService.ActualizarCantidadItem(
+                item.ProductoId,
+                nuevaCantidad,
+                item.Color,
+                item.Tamaño);
+
+            if (respuesta.Error)
+            {
+                var msg = await respuesta.ObtenerError();
+                mensajeError = $"No se pudo actualizar la cantidad: {msg}";
+            }
+            else
+            {
+                mensajeExito = "Cantidad actualizada correctamente";
+            }
+
+            // SIEMPRE recargar carrito para que StockDisponible, TieneStockSuficiente, etc. vengan correctos
+            await CargarCarrito();
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"Error: {ex.Message}";
+            Console.WriteLine($"❌ Error en ActualizarCantidad: {ex.Message}");
+        }
+        finally
+        {
+            actualizandoCantidad = false;
+            StateHasChanged();
+        }
+    }
+
+    
+    /// Elimina un item del carrito
+  
+    private async Task EliminarItem(CarritoItemDTO item)
+    {
+        if (!await JS.InvokeAsync<bool>("confirm",
+            $"¿Eliminar '{item.ProductoNombre}' del carrito?"))
+        {
+            return;
+        }
+
+        try
+        {
+            Console.WriteLine($"🗑️ Eliminando producto {item.ProductoId} del carrito");
+
+            var respuesta = await CarritoService.EliminarItem(
+                item.ProductoId,
+                item.Color,
+                item.Tamaño);
+
+            if (!respuesta.Error)
+            {
+                // Eliminar localmente
+                items.Remove(item);
+                mensajeExito = "Producto eliminado del carrito";
+                Console.WriteLine("✅ Producto eliminado exitosamente");
+            }
+            else
+            {
+                var mensajeErrorServidor = await respuesta.ObtenerError();
+                mensajeError = $"Error al vaciar carrito: {mensajeErrorServidor}";
+                Console.WriteLine($"❌ Error: {mensajeErrorServidor}");
+            }
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"Error: {ex.Message}";
+            Console.WriteLine($"❌ Error en EliminarItem: {ex.Message}");
+        }
+
+        StateHasChanged();
+    }
+
+    
+    /// Vacía completamente el carrito
+    
+    private async Task VaciarCarrito()
+    {
+        if (!await JS.InvokeAsync<bool>("confirm",
+            "¿Estás seguro de vaciar todo el carrito?\nEsta acción no se puede deshacer."))
+        {
+            return;
+        }
+
+        try
+        {
+            Console.WriteLine("🧹 Vaciando carrito...");
+
+            var respuesta = await CarritoService.VaciarCarrito();
+
+            if (!respuesta.Error)
+            {
+                items.Clear();
+                mensajeExito = "Carrito vaciado correctamente";
+                Console.WriteLine("✅ Carrito vaciado exitosamente");
+            }
+            else
+            {
+                
+                var mensajeErrorServidor = await respuesta.ObtenerError();
+                mensajeError = $"Error al eliminar producto: {mensajeErrorServidor}";
+                Console.WriteLine($"❌ Error: {mensajeErrorServidor}");
+                
+            }
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"Error: {ex.Message}";
+            Console.WriteLine($"❌ Error en VaciarCarrito: {ex.Message}");
+        }
+
+        StateHasChanged();
+    }
+
+   
+    /// Recarga el carrito desde el servidor
+   
+    private async Task ActualizarCarrito()
+    {
+        await CargarCarrito();
+        mensajeExito = "Carrito actualizado";
+    }
+
+    /// Navega a la página de checkout
+    
+    private void ProcederCheckout()
+    {
+        // Verificar que todos los items tengan stock suficiente
+        if (items.Any(i => !i.TieneStockSuficiente))
+        {
+            mensajeError = "Algunos productos no tienen stock suficiente. Ajusta las cantidades antes de continuar.";
+            return;
+        }
+
+        Console.WriteLine("➡️ Navegando a checkout...");
+        Navigation.NavigateTo("/ventas/finalizar");
+    }
+}
+
+<style>
+    /* Estilos específicos para la página del carrito */
+    .text-violet-gradient {
+        background: linear-gradient(180deg, #450050 0%, #e753fe 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .bg-violet {
+        background: linear-gradient(180deg, #450050 0%, #e753fe 100%) !important;
+    }
+
+    .btn-violet-gradient {
+        background: linear-gradient(180deg, #450050 0%, #e753fe 100%) !important;
+        border: none !important;
+        color: white !important;
+        transition: all 0.3s ease;
+    }
+
+        .btn-violet-gradient:hover {
+            box-shadow: 0 5px 15px rgba(231, 83, 254, 0.4) !important;
+            transform: translateY(-2px);
+        }
+
+        .btn-violet-gradient:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+    .btn-outline-violet {
+        color: #e753fe !important;
+        border-color: #e753fe !important;
+        background: transparent !important;
+        transition: all 0.3s ease;
+    }
+
+        .btn-outline-violet:hover {
+            background: linear-gradient(180deg, rgba(69, 0, 80, 0.1) 0%, rgba(231, 83, 254, 0.1) 100%) !important;
+            box-shadow: 0 5px 15px rgba(231, 83, 254, 0.2) !important;
+        }
+
+    .border-violet {
+        border-color: rgba(231, 83, 254, 0.2) !important;
+    }
+
+    .bg-gradient-violet {
+        background: linear-gradient(180deg, #450050 0%, #e753fe 100%) !important;
+    }
+
+    .text-violet-light {
+        color: rgba(231, 83, 254, 0.3) !important;
+    }
+
+    .empty-cart-icon {
+        opacity: 0.5;
+    }
+
+    .badge {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
+
+    .sticky-top {
+        position: sticky;
+        z-index: 100;
+    }
+
+    /* Estilos para los botones de cantidad */
+    .btn-outline-violet.rounded-circle {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+    }
+
+        .btn-outline-violet.rounded-circle:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+    /* Mejoras de responsive */
+    @@media (max-width: 768px) {
+        .card .row {
+            flex-direction: column;
+        }
+
+        .col-md-3, .col-md-9 {
+            width: 100% !important;
+        }
+
+        .col-md-3 {
+            height: 200px !important;
+        }
+    }
+</style>

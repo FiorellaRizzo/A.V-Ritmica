@@ -1,23 +1,61 @@
 ﻿@page "/producto/detalle/{ProductoId:int}"
 @using AVritmica.BD.Data.Entity
 @using AVritmica.Client.Servicios
+@using AVritmica.Client.Servicios.Entidades
+@using AVritmica.Shared.DTO
 @inject IProductoService ProductoService
+@inject ICarritoServicio CarritoService
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 
 <PageTitle>Avítmica - Detalle del Producto</PageTitle>
 
-<!-- Breadcrumb -->
+<!-- Breadcrumb con botón del carrito -->
 <div class="container mt-4">
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-                <a href="/catalogo" class="text-decoration-none" style="color: #e753fe;">
-                    <i class="fas fa-arrow-left me-1"></i>Volver al Catálogo
-                </a>
-            </li>
-            <li class="breadcrumb-item active" aria-current="page">Detalle del Producto</li>
-        </ol>
-    </nav>
+    <div class="d-flex justify-content-between align-items-center">
+        <nav aria-label="breadcrumb" style="flex: 1;">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="/catalogo" class="text-decoration-none" style="color: #e753fe;">
+                        <i class="fas fa-arrow-left me-1"></i>Volver al Catálogo
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">Detalle del Producto</li>
+            </ol>
+        </nav>
+
+        <!-- Botón del Carrito -->
+        <div class="ms-3">
+            <a class="btn position-relative px-3 py-1 d-flex align-items-center"
+               href="/carrito"
+               title="Ver carrito"
+               style="background: rgba(69, 0, 80, 0.9);
+                      color: white;
+                      border: 1px solid rgba(231, 83, 254, 0.5);
+                      border-radius: 6px;
+                      font-weight: 600;
+                      text-decoration: none;
+                      box-shadow: 0 4px 12px rgba(69, 0, 80, 0.3);
+                      font-size: 0.9rem;
+                      white-space: nowrap;">
+
+                <i class="fas fa-shopping-cart me-1"></i>
+                <span>Carrito</span>
+
+                @if (cantidadEnCarrito > 0)
+                {
+                    <span class="ms-1 badge rounded-pill px-1 py-0"
+                          style="background: linear-gradient(180deg, #ff4757 0%, #ff3838 100%);
+                                     color: white;
+                                     font-size: 0.7rem;
+                                     min-width: 18px;
+                                     border: 1px solid white;">
+                        @cantidadEnCarrito
+                    </span>
+                }
+            </a>
+        </div>
+    </div>
 </div>
 
 @if (cargando)
@@ -95,46 +133,103 @@ else
             <div class="col-lg-6">
                 <div class="card border-0 shadow-sm">
                     <div class="card-body p-4">
-                        <!-- Estado del stock (MEJORADO) -->
+                        <!-- Mensajes de estado -->
+                        @if (mensajeError != null)
+                        {
+                            <div class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+                                <i class="fas fa-exclamation-circle me-2"></i>@mensajeError
+                                <button type="button" class="btn-close" @onclick="() => mensajeError = null"></button>
+                            </div>
+                        }
+
+                        @if (mensajeExito != null)
+                        {
+                            <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+                                <i class="fas fa-check-circle me-2"></i>@mensajeExito
+                                <button type="button" class="btn-close" @onclick="() => mensajeExito = null"></button>
+                            </div>
+                        }
+
+                        <!-- Estado del stock (según color seleccionado si hay variantes) -->
                         <div class="mb-3">
                             @if (producto.CompletamenteAgotado)
                             {
                                 <span class="badge rounded-pill p-2"
-                                      style="background: linear-gradient(180deg, #dc3545 0%, #c82333 100%); color:#dc3545 0%;">
+                                      style="background: linear-gradient(180deg, #dc3545 0%, #c82333 100%); color:#fff;">
                                     <i class="fas fa-times-circle me-1"></i>COMPLETAMENTE AGOTADO
                                 </span>
                                 <small class="text-muted ms-2">
                                     <i class="fas fa-cube me-1"></i>No disponible en ningún color
                                 </small>
                             }
-                            else if (producto.AlgunColorAgotado)
+                            else if (producto.TieneVariantes && !string.IsNullOrEmpty(colorSeleccionado))
                             {
-                                <span class="badge rounded-pill p-2"
-                                      style="background: linear-gradient(180deg, #ffc107 0%, #fd7e14 100%); color:#ffc107 0%;">
-                                    <i class="fas fa-exclamation-triangle me-1"></i>STOCK LIMITADO
-                                </span>
-                                <small class="text-muted ms-2">
-                                    <i class="fas fa-cube me-1"></i>Algunos colores agotados
-                                </small>
-                            }
-                            else if (producto.Stock > 0)
-                            {
-                                <span class="badge rounded-pill p-2"
-                                      style="background: linear-gradient(180deg, #28a745 0%, #20c997 100%); color: #28a745 0%;">
-                                    <i class="fas fa-check-circle me-1"></i>DISPONIBLE
-                                </span>
-                                <small class="text-muted ms-2">
-                                    <i class="fas fa-cube me-1"></i>@producto.Stock unidades totales
-                                </small>
+                                var stockColorSeleccionado = producto.ObtenerStockPorColor(colorSeleccionado);
+
+                                if (stockColorSeleccionado <= 0)
+                                {
+                                    <span class="badge rounded-pill p-2"
+                                          style="background: linear-gradient(180deg, #dc3545 0%, #c82333 100%); color:#fff;">
+                                        <i class="fas fa-times-circle me-1"></i>AGOTADO
+                                    </span>
+                                    <small class="text-muted ms-2">
+                                        <i class="fas fa-cube me-1"></i>Color @colorSeleccionado sin stock
+                                    </small>
+                                }
+                                else if (stockColorSeleccionado < 5)
+                                {
+                                    <span class="badge rounded-pill p-2"
+                                          style="background: linear-gradient(180deg, #ffc107 0%, #fd7e14 100%); color:#212529;">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>STOCK LIMITADO
+                                    </span>
+                                    <small class="text-muted ms-2">
+                                        <i class="fas fa-cube me-1"></i>Color @colorSeleccionado – quedan @stockColorSeleccionado u.
+                                    </small>
+                                }
+                                else
+                                {
+                                    <span class="badge rounded-pill p-2"
+                                          style="background: linear-gradient(180deg, #28a745 0%, #20c997 100%); color:#fff;">
+                                        <i class="fas fa-check-circle me-1"></i>DISPONIBLE
+                                    </span>
+                                    <small class="text-muted ms-2">
+                                        <i class="fas fa-cube me-1"></i>Color @colorSeleccionado – @stockColorSeleccionado u. disponibles
+                                    </small>
+                                }
                             }
                             else
                             {
-                                <span class="badge rounded-pill p-2"
-                                      style="background: linear-gradient(180deg, #dc3545 0%, #c82333 100%); color:#dc3545 0%;">
-                                    <i class="fas fa-times-circle me-1"></i>AGOTADO
-                                </span>
+                                // Producto sin variantes (o sin color seleccionado)
+                                if (producto.Stock <= 0)
+                                {
+                                    <span class="badge rounded-pill p-2"
+                                          style="background: linear-gradient(180deg, #dc3545 0%, #c82333 100%); color:#fff;">
+                                        <i class="fas fa-times-circle me-1"></i>AGOTADO
+                                    </span>
+                                }
+                                else if (producto.Stock < 5)
+                                {
+                                    <span class="badge rounded-pill p-2"
+                                          style="background: linear-gradient(180deg, #ffc107 0%, #fd7e14 100%); color:#212529;">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>STOCK LIMITADO
+                                    </span>
+                                    <small class="text-muted ms-2">
+                                        <i class="fas fa-cube me-1"></i>Solo @producto.Stock u. disponibles
+                                    </small>
+                                }
+                                else
+                                {
+                                    <span class="badge rounded-pill p-2"
+                                          style="background: linear-gradient(180deg, #28a745 0%, #20c997 100%); color:#fff;">
+                                        <i class="fas fa-check-circle me-1"></i>DISPONIBLE
+                                    </span>
+                                    <small class="text-muted ms-2">
+                                        <i class="fas fa-cube me-1"></i>@producto.Stock unidades totales
+                                    </small>
+                                }
                             }
                         </div>
+
 
                         <!-- Nombre del producto -->
                         <h1 class="h2 fw-bold mb-3" style="color: #450050;">@producto.Nombre</h1>
@@ -200,7 +295,7 @@ else
                                     }
                                 </div>
 
-                                <!-- Mensaje si el color seleccionado está agotado -->
+                                @* Mensajes de color seleccionado / agotado, igual que en tu versión vieja *@
                                 @if (!string.IsNullOrEmpty(colorSeleccionado))
                                 {
                                     var stockColorSeleccionado = producto.ObtenerStockPorColor(colorSeleccionado);
@@ -224,7 +319,6 @@ else
                                     }
                                 }
 
-                                <!-- Mensaje si ningún color tiene stock -->
                                 @if (coloresConStock.Count == 0 && coloresDisponibles.Any())
                                 {
                                     <div class="alert alert-danger mt-2">
@@ -341,11 +435,23 @@ else
                                     }
                                 </button>
 
-                                <button class="btn btn-outline-violeta btn-lg py-3"
-                                        @onclick="ComprarAhora"
-                                        disabled="@(!puedeAgregarAlCarrito || cantidad > maximoCantidad)">
-                                    <i class="fas fa-bolt me-2"></i>Comprar Ahora
-                                </button>
+                               
+
+                                <!-- Enlace para ver carrito existente -->
+                                @if (cantidadEnCarrito > 0)
+                                {
+                                    <div class="text-center mt-2">
+                                        <a href="/carrito" class="btn btn-link position-relative"
+                                           style="color: #e753fe; text-decoration: none;">
+                                            <i class="fas fa-eye me-1"></i>
+                                            Ver mi carrito
+                                            <span class="badge rounded-pill ms-1 px-2"
+                                                  style="background: #e753fe; color: white; font-size: 0.8rem;">
+                                                @cantidadEnCarrito items
+                                            </span>
+                                        </a>
+                                    </div>
+                                }
                             </div>
                         }
                         else
@@ -409,53 +515,12 @@ else
                                     </div>
                                 </div>
                             </div>
-
-                            <!-- Stock por color detallado -->
-                            @if (producto.TieneVariantes && coloresDisponibles.Any())
-                            {
-                                <div class="mt-3 pt-3 border-top">
-                                    <h6 style="color: #450050;">Stock por color:</h6>
-                                    <div class="d-flex flex-wrap gap-2">
-                                        @foreach (var color in coloresDisponibles)
-                                        {
-                                            var stockColor = producto.ObtenerStockPorColor(color);
-                                            <div class="border rounded p-2" style="width: 100px;">
-                                                <div class="d-flex align-items-center mb-1">
-                                                    <div class="color-circle-sm me-2"
-                                                         style="background-color: @ObtenerColorHex(color);"></div>
-                                                    <small class="fw-medium">@color</small>
-                                                </div>
-                                                <div class="text-center">
-                                                    @if (stockColor <= 0)
-                                                    {
-                                                        <span class="badge bg-danger">AGOTADO</span>
-                                                    }
-                                                    else if (stockColor < 5)
-                                                    {
-                                                        <span class="badge bg-warning text-dark">@stockColor u.</span>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span class="badge bg-success">@stockColor u.</span>
-                                                    }
-                                                </div>
-                                            </div>
-                                        }
-                                    </div>
-                                </div>
-                            }
                         </div>
 
                         <!-- Envío y garantía -->
                         <div class="mt-4">
                             <div class="row g-3">
-                                <div class="col-sm-4">
-                                    <div class="text-center p-3 border rounded">
-                                        <i class="fas fa-shipping-fast fa-2x mb-2" style="color: #e753fe;"></i>
-                                        <small class="d-block fw-medium">Envío gratis</small>
-                                        <small class="text-muted">En compras > $50.000</small>
-                                    </div>
-                                </div>
+                               
                                 <div class="col-sm-4">
                                     <div class="text-center p-3 border rounded">
                                         <i class="fas fa-shield-alt fa-2x mb-2" style="color: #e753fe;"></i>
@@ -487,6 +552,9 @@ else
     private bool agregandoAlCarrito = false;
     private int cantidad = 1;
 
+    // Variable para el contador del carrito
+    private int cantidadEnCarrito = 0;
+
     // Variables para variantes
     private string colorSeleccionado = "";
     private string tamanoSeleccionado = "";
@@ -499,11 +567,21 @@ else
     private int maximoCantidad = 0;
     private bool puedeAgregarAlCarrito = false;
 
+    // Variables para mensajes
+    private string? mensajeError;
+    private string? mensajeExito;
+
+    // TODO: Temporal - usar ID 1 hasta implementar login
+    private int usuarioIdTemporal = 1;
+
     protected override async Task OnInitializedAsync()
     {
         await CargarProducto();
         InicializarVariantes();
         ActualizarEstadoCompra();
+
+        // Cargar la cantidad de items en el carrito
+        await CargarCantidadCarrito();
     }
 
     private async Task CargarProducto()
@@ -620,6 +698,22 @@ else
         }
     }
 
+    private async Task CargarCantidadCarrito()
+    {
+        try
+        {
+            var respuesta = await CarritoService.ObtenerItemsCarrito();
+            if (!respuesta.Error && respuesta.Respuesta != null)
+            {
+                cantidadEnCarrito = respuesta.Respuesta.Sum(i => i.Cantidad);
+            }
+        }
+        catch
+        {
+            cantidadEnCarrito = 0;
+        }
+    }
+
     private void IncrementarCantidad()
     {
         if (cantidad < maximoCantidad)
@@ -671,43 +765,60 @@ else
         if (!puedeAgregarAlCarrito || cantidad > maximoCantidad) return;
 
         agregandoAlCarrito = true;
+        mensajeError = null;
+        mensajeExito = null;
         StateHasChanged();
 
         try
         {
-            // Preparar datos de la variante seleccionada
-            var varianteSeleccionada = new
+            Console.WriteLine("📦 Agregando producto al carrito...");
+
+            // Crear DTO para agregar al carrito
+            var itemDTO = new AgregarAlCarritoDTO
             {
+                UsuarioId = usuarioIdTemporal, // ← Usar el temporal
                 ProductoId = producto.Id,
-                ProductoNombre = producto.Nombre,
-                Color = producto.TieneVariantes ? colorSeleccionado : null,
-                Tamaño = producto.TieneVariantes ? tamanoSeleccionado : null,
                 Cantidad = cantidad,
                 PrecioUnitario = producto.Precio,
-                Total = producto.Precio * cantidad,
-                StockColor = producto.TieneVariantes ? producto.ObtenerStockPorColor(colorSeleccionado) : producto.Stock
+                Color = producto.TieneVariantes ? colorSeleccionado : null,
+                Tamaño = producto.TieneVariantes ? tamanoSeleccionado : null
             };
 
-            Console.WriteLine("📦 AGREGANDO AL CARRITO:");
-            Console.WriteLine($"- Producto: {varianteSeleccionada.ProductoNombre}");
+            Console.WriteLine($"- Usuario (temporal): {itemDTO.UsuarioId}");
+            Console.WriteLine($"- Producto: {producto.Nombre}");
             if (producto.TieneVariantes)
             {
-                Console.WriteLine($"- Color: {varianteSeleccionada.Color} (Stock: {varianteSeleccionada.StockColor})");
-                Console.WriteLine($"- Tamaño: {varianteSeleccionada.Tamaño}");
+                Console.WriteLine($"- Color: {itemDTO.Color}");
+                Console.WriteLine($"- Tamaño: {itemDTO.Tamaño}");
             }
-            Console.WriteLine($"- Cantidad: {varianteSeleccionada.Cantidad}");
-            Console.WriteLine($"- Total: ${varianteSeleccionada.Total:N2}");
+            Console.WriteLine($"- Cantidad: {itemDTO.Cantidad}");
+            Console.WriteLine($"- Precio unitario: ${itemDTO.PrecioUnitario:N2}");
+            Console.WriteLine($"- Total: ${(producto.Precio * cantidad):N2}");
 
-            await Task.Delay(1000); // Simulación
+            // Llamar al servicio - NOTA: usa "agregar-item" con minúscula
+            var respuesta = await CarritoService.AgregarItem(itemDTO);
 
-            Console.WriteLine("✅ Producto agregado al carrito (simulado)");
+            if (!respuesta.Error)
+            {
+                mensajeExito = $"✅ {producto.Nombre} agregado al carrito correctamente";
+                Console.WriteLine("✅ Producto agregado al carrito exitosamente");
 
-            // Mostrar mensaje temporal
-            // TODO: Implementar lógica real del carrito
+                // Mostrar notificación
+                //await JS.InvokeVoidAsync("alert", mensajeExito);
+            }
+            else
+            {
+                var mensajeErrorServidor = await respuesta.ObtenerError();
+                mensajeError = $"❌ Error: {mensajeErrorServidor}";
+                Console.WriteLine($"❌ Error del servidor: {mensajeErrorServidor}");
+                await JS.InvokeVoidAsync("alert", mensajeError);
+            }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"❌ Error: {ex.Message}");
+            mensajeError = $"❌ Error de conexión: {ex.Message}";
+            Console.WriteLine($"❌ Error en AgregarAlCarrito: {ex.Message}");
+            await JS.InvokeVoidAsync("alert", mensajeError);
         }
 
         agregandoAlCarrito = false;
@@ -729,8 +840,16 @@ else
             Console.WriteLine($"- Cantidad: {cantidad}");
             Console.WriteLine($"- Total: ${(producto.Precio * cantidad):N2}");
 
-            // TODO: Redirigir al checkout
-            // Navigation.NavigateTo($"/checkout?productoId={producto.Id}&color={colorSeleccionado}&tamaño={tamanoSeleccionado}&cantidad={cantidad}");
+            // Primero agregar al carrito, luego redirigir al checkout
+            AgregarAlCarrito().ContinueWith(async task =>
+            {
+                if (mensajeExito != null && !mensajeExito.Contains("Error"))
+                {
+                    // Si se agregó correctamente, redirigir al checkout
+                    // Navigation.NavigateTo($"/checkout?productoId={producto.Id}&color={colorSeleccionado}&tamaño={tamanoSeleccionado}&cantidad={cantidad}");
+                    Console.WriteLine("➡️ Redirigiendo a checkout...");
+                }
+            });
         }
     }
 

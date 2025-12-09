@@ -6,323 +6,336 @@
 @inject ICategoriaService CategoriaService
 @inject NavigationManager Navigation
 
-<h3>@Titulo</h3>
-
 <EditForm Model="producto" OnValidSubmit="GuardarProducto">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
-    <!-- Campos básicos -->
-    <div class="mb-3">
-        <label class="form-label">Nombre *</label>
-        <InputText @bind-Value="producto.Nombre" class="form-control" />
-        <ValidationMessage For="@(() => producto.Nombre)" />
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Descripción</label>
-        <InputTextArea @bind-Value="producto.Descripcion" class="form-control" rows="3" />
-        <ValidationMessage For="@(() => producto.Descripcion)" />
-    </div>
-
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label class="form-label">Precio *</label>
-            <InputNumber @bind-Value="producto.Precio" class="form-control" />
-            <ValidationMessage For="@(() => producto.Precio)" />
+    <div class="form-producto-card card shadow-sm border-0 mb-4">
+        <div class="card-header form-producto-header">
+            <h3 class="mb-0">
+                <i class="fas fa-box-open me-2"></i>@Titulo
+            </h3>
         </div>
-        <div class="col-md-6">
-            <label class="form-label">Stock Total *</label>
-            <InputNumber @bind-Value="producto.Stock" class="form-control" />
-            <ValidationMessage For="@(() => producto.Stock)" />
-        </div>
-    </div>
 
-    <div class="mb-3">
-        <label class="form-label">URL de Imagen Principal</label>
-        <InputText @bind-Value="producto.ImagenUrl" class="form-control" />
-        <ValidationMessage For="@(() => producto.ImagenUrl)" />
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Categoría *</label>
-        <InputSelect @bind-Value="producto.CategoriaId" class="form-control">
-            <option value="">Seleccione una categoría</option>
-            @foreach (var categoria in categorias)
-            {
-                <option value="@categoria.Id">@categoria.Nombre</option>
-            }
-        </InputSelect>
-        <ValidationMessage For="@(() => producto.CategoriaId)" />
-    </div>
-
-    <!-- ============================================= -->
-    <!-- SECCIÓN DE VARIANTES -->
-    <!-- ============================================= -->
-    <div class="card mb-4 border-primary">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">
-                <i class="fas fa-palette me-2"></i>Opciones y Variantes
-            </h5>
-        </div>
         <div class="card-body">
-            <!-- Switch para activar variantes -->
-            <div class="form-check form-switch mb-4">
-                <InputCheckbox @bind-Value="producto.TieneVariantes" class="form-check-input" id="toggleVariantes" />
-                <label class="form-check-label fw-bold" for="toggleVariantes" style="color: #450050; font-size: 1.1rem;">
-                    Este producto tiene diferentes colores, tamaños o variantes
-                </label>
+
+            <!-- Campos básicos -->
+            <div class="row g-3 mb-3">
+                <div class="col-md-8">
+                    <label class="form-label fw-semibold">Nombre *</label>
+                    <InputText @bind-Value="producto.Nombre" class="form-control form-control-violeta" />
+                    <ValidationMessage For="@(() => producto.Nombre)" />
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Categoría *</label>
+                    <InputSelect @bind-Value="producto.CategoriaId" class="form-select form-control-violeta">
+                        <option value="">Seleccione una categoría</option>
+                        @foreach (var categoria in categorias)
+                        {
+                            <option value="@categoria.Id">@categoria.Nombre</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="@(() => producto.CategoriaId)" />
+                </div>
             </div>
 
-            <!-- Campos que SOLO aparecen si TieneVariantes es TRUE -->
-            @if (producto.TieneVariantes)
-            {
-                <div class="variantes-section p-3 border rounded" style="background-color: #f8f9fa;">
-                    <h6 class="mb-3" style="color: #450050;">
-                        <i class="fas fa-cogs me-2"></i>Configurar Variantes
-                    </h6>
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Descripción</label>
+                <InputTextArea @bind-Value="producto.Descripcion"
+                               class="form-control form-control-violeta"
+                               rows="3" />
+                <ValidationMessage For="@(() => producto.Descripcion)" />
+            </div>
 
-                    <!-- Colores disponibles -->
-                    <div class="mb-3">
-                        <label class="form-label">
-                            <i class="fas fa-palette me-1 text-primary"></i>Colores disponibles
+            <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Precio *</label>
+                    <InputNumber @bind-Value="producto.Precio" class="form-control form-control-violeta" />
+                    <ValidationMessage For="@(() => producto.Precio)" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Stock Total *</label>
+                    <InputNumber @bind-Value="producto.Stock" class="form-control form-control-violeta" />
+                    <ValidationMessage For="@(() => producto.Stock)" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">URL de Imagen Principal</label>
+                    <InputText @bind-Value="producto.ImagenUrl" class="form-control form-control-violeta" />
+                    <ValidationMessage For="@(() => producto.ImagenUrl)" />
+                </div>
+            </div>
+
+            <!-- SECCIÓN DE VARIANTES -->
+            <div class="card mb-4 border-0 variantes-card shadow-sm">
+                <div class="card-header variantes-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-palette me-2"></i>Opciones y Variantes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Switch para activar variantes -->
+                    <div class="form-check form-switch mb-4">
+                        <InputCheckbox @bind-Value="producto.TieneVariantes"
+                                       class="form-check-input switch-violeta"
+                                       id="toggleVariantes" />
+                        <label class="form-check-label fw-bold" for="toggleVariantes" style="color: #450050;">
+                            Este producto tiene diferentes colores, tamaños o variantes
                         </label>
-                        <InputTextArea @bind-Value="producto.ColoresDisponibles"
-                                       class="form-control"
-                                       rows="2"
-                                       placeholder="Ej: Rojo, Azul, Verde, Rosa, Dorado"
-                                       @oninput="RecalcularStockPorColor" />
-                        <small class="text-muted">Separar cada color con una coma. Ejemplo: "Rojo, Azul, Verde"</small>
                     </div>
 
-                    <!-- Tamaños disponibles -->
-                    <div class="mb-3">
-                        <label class="form-label">
-                            <i class="fas fa-expand-alt me-1 text-primary"></i>Tamaños disponibles
-                        </label>
-                        <InputTextArea @bind-Value="producto.TamaniosDisponibles"
-                                       class="form-control"
-                                       rows="2"
-                                       placeholder="Ej: S, M, L, XL o 18cm, 19cm, 20cm" />
-                        <small class="text-muted">Separar cada tamaño con una coma. Ejemplo: "S, M, L"</small>
-                    </div>
-
-                    <!-- Imágenes de variantes -->
-                    <div class="mb-3">
-                        <label class="form-label">
-                            <i class="fas fa-images me-1 text-primary"></i>Imágenes para cada variante
-                        </label>
-                        <InputTextArea @bind-Value="producto.ImagenesVariantes"
-                                       class="form-control"
-                                       rows="3"
-                                       placeholder="https://ejemplo.com/imagen-rojo.jpg, https://ejemplo.com/imagen-azul.jpg" />
-                        <small class="text-muted">URLs de imágenes separadas por comas. Una por cada variante.</small>
-                    </div>
-
-                    <!-- Resumen de lo configurado -->
-                    <div class="alert alert-info mt-3">
-                        <h6><i class="fas fa-info-circle me-2"></i>Resumen de variantes configuradas:</h6>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <strong>Colores:</strong><br>
-                                @if (!string.IsNullOrEmpty(producto.ColoresDisponibles))
-                                {
-                                    <div class="d-flex flex-wrap gap-1 mt-1">
-                                        @foreach (var color in producto.ColoresDisponibles.Split(',', StringSplitOptions.RemoveEmptyEntries))
-                                        {
-                                            <span class="badge bg-primary">@color.Trim()</span>
-                                        }
-                                    </div>
-                                }
-                                else
-                                {
-                                    <span class="text-muted">No definidos</span>
-                                }
-                            </div>
-                            <div class="col-md-6">
-                                <strong>Tamaños:</strong><br>
-                                @if (!string.IsNullOrEmpty(producto.TamaniosDisponibles))
-                                {
-                                    <div class="d-flex flex-wrap gap-1 mt-1">
-                                        @foreach (var tam in producto.TamaniosDisponibles.Split(',', StringSplitOptions.RemoveEmptyEntries))
-                                        {
-                                            <span class="badge bg-secondary">@tam.Trim()</span>
-                                        }
-                                    </div>
-                                }
-                                else
-                                {
-                                    <span class="text-muted">No definidos</span>
-                                }
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ============================================= -->
-                    <!-- NUEVA SECCIÓN: STOCK POR COLOR -->
-                    <!-- ============================================= -->
-                    @if (!string.IsNullOrEmpty(producto.ColoresDisponibles))
+                    <!-- Campos que SOLO aparecen si TieneVariantes es TRUE -->
+                    @if (producto.TieneVariantes)
                     {
-                        <div class="card mt-4 border-success">
-                            <div class="card-header bg-success text-white">
-                                <h6 class="mb-0">
-                                    <i class="fas fa-boxes me-2"></i>Gestión de Stock por Color
+                        <div class="variantes-section p-3 border rounded variantes-body-bg">
+
+                            <h6 class="mb-3 variantes-title">
+                                <i class="fas fa-cogs me-2"></i>Configurar Variantes
+                            </h6>
+
+                            <!-- Colores disponibles -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-palette me-1 text-violeta-soft"></i>Colores disponibles
+                                </label>
+                                <InputTextArea @bind-Value="producto.ColoresDisponibles"
+                                               class="form-control form-control-violeta"
+                                               rows="2"
+                                               placeholder="Ej: Rojo, Azul, Verde, Rosa, Dorado"
+                                               @oninput="RecalcularStockPorColor" />
+                                <small class="text-muted">Separar cada color con una coma. Ejemplo: "Rojo, Azul, Verde"</small>
+                            </div>
+
+                            <!-- Tamaños disponibles -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-expand-alt me-1 text-violeta-soft"></i>Tamaños disponibles
+                                </label>
+                                <InputTextArea @bind-Value="producto.TamaniosDisponibles"
+                                               class="form-control form-control-violeta"
+                                               rows="2"
+                                               placeholder="Ej: S, M, L, XL o 18cm, 19cm, 20cm" />
+                                <small class="text-muted">Separar cada tamaño con una coma. Ejemplo: "S, M, L"</small>
+                            </div>
+
+                            <!-- Imágenes de variantes -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-images me-1 text-violeta-soft"></i>Imágenes para cada variante
+                                </label>
+                                <InputTextArea @bind-Value="producto.ImagenesVariantes"
+                                               class="form-control form-control-violeta"
+                                               rows="3"
+                                               placeholder="https://ejemplo.com/imagen-rojo.jpg, https://ejemplo.com/imagen-azul.jpg" />
+                                <small class="text-muted">URLs de imágenes separadas por comas. Una por cada variante.</small>
+                            </div>
+
+                            <!-- Resumen de lo configurado -->
+                            <div class="alert alert-violeta-info mt-3">
+                                <h6 class="mb-2">
+                                    <i class="fas fa-info-circle me-2"></i>Resumen de variantes configuradas:
                                 </h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="alert alert-warning">
-                                    <i class="fas fa-exclamation-triangle me-2"></i>
-                                    <strong>Importante:</strong> Aquí defines cuántas unidades hay de cada color.
-                                    El stock total del producto será la suma de todos los colores.
-                                </div>
-
-                                @{
-                                    var coloresLista = producto.ColoresDisponibles
-                                    .Split(',', StringSplitOptions.RemoveEmptyEntries)
-                                    .Select(c => c.Trim())
-                                    .ToList();
-                                }
-
-                                <div class="table-responsive">
-                                    <table class="table table-bordered">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>Color</th>
-                                                <th>Stock Disponible</th>
-                                                <th>Estado</th>
-                                                <th>Acción</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach (var color in coloresLista)
-                                            {
-                                                var stockActual = stockPorColorDic.ContainsKey(color) ? stockPorColorDic[color] : 0;
-                                                var estaAgotado = stockActual <= 0;
-
-                                                <tr>
-                                                    <td>
-                                                        <div class="d-flex align-items-center">
-                                                            <div class="color-circle me-2" style="background-color: @ObtenerColorHex(color)"></div>
-                                                            <strong>@color</strong>
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <input type="number"
-                                                               class="form-control form-control-sm"
-                                                               value="@stockActual"
-                                                               @onchange="@(e => ActualizarStockColor(color, e))"
-                                                               min="0"
-                                                               style="width: 100px; display: inline-block;" />
-                                                    </td>
-                                                    <td>
-                                                        @if (estaAgotado)
-                                                        {
-                                                            <span class="badge bg-danger">
-                                                                <i class="fas fa-times-circle me-1"></i>AGOTADO
-                                                            </span>
-                                                        }
-                                                        else if (stockActual < 5)
-                                                        {
-                                                            <span class="badge bg-warning text-dark">
-                                                                <i class="fas fa-exclamation-triangle me-1"></i>ÚLTIMAS (@stockActual)
-                                                            </span>
-                                                        }
-                                                        else
-                                                        {
-                                                            <span class="badge bg-success">
-                                                                <i class="fas fa-check-circle me-1"></i>DISPONIBLE (@stockActual)
-                                                            </span>
-                                                        }
-                                                    </td>
-                                                    <td>
-                                                        <button type="button"
-                                                                class="btn btn-outline-danger btn-sm"
-                                                                @onclick="() => PonerEnCero(color)"
-                                                                title="Poner en 0 (agotado)">
-                                                            <i class="fas fa-ban"></i>
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            }
-                                        </tbody>
-                                        <tfoot class="table-secondary">
-                                            <tr>
-                                                <td><strong>TOTAL</strong></td>
-                                                <td>
-                                                    <input type="number"
-                                                           @bind="producto.Stock"
-                                                           class="form-control form-control-sm"
-                                                           style="width: 100px; display: inline-block;"
-                                                           min="0" />
-                                                </td>
-                                                <td colspan="2">
-                                                    <small class="text-muted">
-                                                        Stock total: @producto.Stock unidades
-                                                    </small>
-                                                </td>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
-                                </div>
-
-                                <!-- Botones de ayuda -->
-                                <div class="d-flex gap-2 mt-3">
-                                  
-                                    <button type="button"
-                                            class="btn btn-outline-secondary btn-sm"
-                                            @onclick="CalcularTotalStock">
-                                        <i class="fas fa-calculator me-1"></i>Calcular Total desde Colores
-                                    </button>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <strong>Colores:</strong><br>
+                                        @if (!string.IsNullOrEmpty(producto.ColoresDisponibles))
+                                        {
+                                            <div class="d-flex flex-wrap gap-1 mt-1">
+                                                @foreach (var color in producto.ColoresDisponibles.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                                                {
+                                                    <span class="badge badge-chip-violeta">@color.Trim()</span>
+                                                }
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">No definidos</span>
+                                        }
+                                    </div>
+                                    <div class="col-md-6">
+                                        <strong>Tamaños:</strong><br>
+                                        @if (!string.IsNullOrEmpty(producto.TamaniosDisponibles))
+                                        {
+                                            <div class="d-flex flex-wrap gap-1 mt-1">
+                                                @foreach (var tam in producto.TamaniosDisponibles.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                                                {
+                                                    <span class="badge badge-chip-grey">@tam.Trim()</span>
+                                                }
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">No definidos</span>
+                                        }
+                                    </div>
                                 </div>
                             </div>
+
+                            <!-- STOCK POR COLOR -->
+                            @if (!string.IsNullOrEmpty(producto.ColoresDisponibles))
+                            {
+                                <div class="card mt-4 stock-card">
+                                    <div class="card-header stock-card-header">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-boxes me-2"></i>Gestión de Stock por Color
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="stock-alert">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                            <strong>Importante:</strong> Aquí defines cuántas unidades hay de cada color.
+                                            El stock total del producto será la suma de todos los colores.
+                                        </div>
+
+                                        @{
+                                            var coloresLista = producto.ColoresDisponibles
+                                            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                            .Select(c => c.Trim())
+                                            .ToList();
+                                        }
+
+                                        <div class="table-responsive">
+                                            <table class="table table-sm align-middle">
+                                                <thead class="table-header-violeta">
+                                                    <tr>
+                                                        <th>Color</th>
+                                                        <th style="width:130px;">Stock Disponible</th>
+                                                        <th>Estado</th>
+                                                        <th style="width:80px;">Acción</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (var color in coloresLista)
+                                                    {
+                                                        var stockActual = stockPorColorDic.ContainsKey(color) ? stockPorColorDic[color] : 0;
+                                                        var estaAgotado = stockActual <= 0;
+
+                                                        <tr>
+                                                            <td>
+                                                                <div class="d-flex align-items-center">
+                                                                    <div class="color-circle me-2" style="background-color: @ObtenerColorHex(color)"></div>
+                                                                    <strong>@color</strong>
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <input type="number"
+                                                                       class="form-control form-control-sm form-control-violeta"
+                                                                       value="@stockActual"
+                                                                       @onchange="@(e => ActualizarStockColor(color, e))"
+                                                                       min="0" />
+                                                            </td>
+                                                            <td>
+                                                                @if (estaAgotado)
+                                                                {
+                                                                    <span class="badge badge-estado-agotado">
+                                                                        <i class="fas fa-times-circle me-1"></i>AGOTADO
+                                                                    </span>
+                                                                }
+                                                                else if (stockActual < 5)
+                                                                {
+                                                                    <span class="badge badge-estado-limitado">
+                                                                        <i class="fas fa-exclamation-triangle me-1"></i>ÚLTIMAS (@stockActual)
+                                                                    </span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span class="badge badge-estado-ok">
+                                                                        <i class="fas fa-check-circle me-1"></i>DISPONIBLE (@stockActual)
+                                                                    </span>
+                                                                }
+                                                            </td>
+                                                            <td class="text-center">
+                                                                <button type="button"
+                                                                        class="btn btn-outline-danger btn-sm"
+                                                                        @onclick="() => PonerEnCero(color)"
+                                                                        title="Poner en 0 (agotado)">
+                                                                    <i class="fas fa-ban"></i>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                                <tfoot class="table-footer-violeta">
+                                                    <tr>
+                                                        <td><strong>TOTAL</strong></td>
+                                                        <td>
+                                                            <input type="number"
+                                                                   @bind="producto.Stock"
+                                                                   class="form-control form-control-sm form-control-violeta"
+                                                                   min="0" />
+                                                        </td>
+                                                        <td colspan="2">
+                                                            <small class="text-muted">
+                                                                Stock total: @producto.Stock unidades
+                                                            </small>
+                                                        </td>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        </div>
+
+                                        <div class="d-flex gap-2 mt-3">
+                                            <button type="button"
+                                                    class="btn btn-outline-violeta btn-sm"
+                                                    @onclick="CalcularTotalStock">
+                                                <i class="fas fa-calculator me-1"></i>Calcular  Stock Total  
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-violeta-soft">
+                            <i class="fas fa-lightbulb me-2"></i>
+                            <strong>¿Tu producto tiene opciones?</strong><br />
+                            Si activas esta opción, los clientes podrán seleccionar entre diferentes colores,
+                            tamaños o versiones de este producto al realizar su compra.
                         </div>
                     }
                 </div>
-            }
-            else
+            </div>
+
+            <!-- Botones -->
+            <div class="mt-3 d-flex gap-2">
+                <button type="submit" class="btn btn-violeta px-4" disabled="@cargando">
+                    @if (cargando)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                    }
+                    else
+                    {
+                        <i class="fas fa-save me-2"></i>
+                        @(Id == 0 ? "Crear Producto" : "Actualizar Producto")
+                    }
+                </button>
+
+                <button type="button"
+                        class="btn btn-outline-violeta px-4"
+                        @onclick="Cancelar"
+                        disabled="@cargando">
+                    <i class="fas fa-times me-2"></i>Cancelar
+                </button>
+            </div>
+
+            @if (!string.IsNullOrEmpty(mensajeError))
             {
-                <div class="alert alert-light">
-                    <i class="fas fa-lightbulb me-2"></i>
-                    <strong>¿Tu producto tiene opciones?</strong><br>
-                    Si activas esta opción, los clientes podrán seleccionar entre diferentes colores,
-                    tamaños o versiones de este producto al realizar su compra.
+                <div class="alert alert-danger mt-3">
+                    <i class="fas fa-exclamation-triangle me-2"></i>@mensajeError
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(mensajeExito))
+            {
+                <div class="alert alert-success mt-3">
+                    <i class="fas fa-check-circle me-2"></i>@mensajeExito
                 </div>
             }
         </div>
     </div>
-
-    <!-- Botones -->
-    <div class="mt-4">
-        <button type="submit" class="btn btn-primary" disabled="@cargando">
-            @if (cargando)
-            {
-                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-            }
-            else
-            {
-                <i class="fas fa-save me-2"></i>
-                @(Id == 0 ? "Crear Producto" : "Actualizar Producto")
-            }
-        </button>
-        <button type="button" class="btn btn-secondary ms-2" @onclick="Cancelar" disabled="@cargando">
-            <i class="fas fa-times me-2"></i>Cancelar
-        </button>
-    </div>
 </EditForm>
-
-@if (!string.IsNullOrEmpty(mensajeError))
-{
-    <div class="alert alert-danger mt-3">
-        <i class="fas fa-exclamation-triangle me-2"></i>@mensajeError
-    </div>
-}
-
-@if (!string.IsNullOrEmpty(mensajeExito))
-{
-    <div class="alert alert-success mt-3">
-        <i class="fas fa-check-circle me-2"></i>@mensajeExito
-    </div>
-}
 
 @code {
     [Parameter]
@@ -681,51 +694,216 @@
 }
 
 <style>
-    /* Estilo para el switch */
-    .form-check-input:checked {
-        background-color: #0d6efd;
-        border-color: #0d6efd;
+    /* CARD GENERAL DEL FORM */
+    .form-producto-card {
+        background: #ffffff;
+        border-radius: 14px;
+        overflow: hidden;
     }
 
-    .form-check-input:focus {
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    .form-producto-header {
+        background: linear-gradient(135deg, #450050 0%, #e753fe 100%);
+        color: #fff;
+        padding: 0.9rem 1.5rem;
     }
 
-    /* Animación suave para mostrar/ocultar variantes */
+    /* CONTROLES */
+    .form-control-violeta,
+    .form-select.form-control-violeta {
+        border-radius: 10px;
+        border-color: #e0caff;
+    }
+
+        .form-control-violeta:focus,
+        .form-select.form-control-violeta:focus {
+            border-color: #e753fe;
+            box-shadow: 0 0 0 0.15rem rgba(231, 83, 254, 0.25);
+        }
+
+    /* SWITCH */
+    .switch-violeta:checked {
+        background-color: #e753fe;
+        border-color: #e753fe;
+    }
+
+    .switch-violeta:focus {
+        box-shadow: 0 0 0 0.15rem rgba(231, 83, 254, 0.35);
+    }
+
+    /* CARD VARIANTES */
+    .variantes-card {
+        border-radius: 12px;
+        background: #ffffff;
+    }
+
+    .variantes-header {
+        background: linear-gradient(135deg, #c77dff 0%, #9d4edd 100%);
+        color: #fff;
+        padding: 0.7rem 1.1rem;
+    }
+
+    .variantes-body-bg {
+        background: linear-gradient(180deg, #f8f0ff 0%, #fdfbff 100%);
+    }
+
+    .variantes-title {
+        color: #450050;
+        font-weight: 600;
+    }
+
+    .text-violeta-soft {
+        color: #9d4edd;
+    }
+
+    /* ALERTAS PERSONALIZADAS */
+    .alert-violeta-info {
+        background: rgba(231, 83, 254, 0.06);
+        border-color: rgba(231, 83, 254, 0.35);
+        color: #450050;
+    }
+
+    .alert-violeta-warning {
+        background: #fff4f8;
+        border-color: #ff8fab;
+        color: #590d22;
+    }
+
+    .alert-violeta-soft {
+        background: #f8f0ff;
+        border-color: #e0caff;
+        color: #450050;
+    }
+
+    /* BADGES / CHIPS */
+    .badge-chip-violeta {
+        background: #c77dff;
+        color: #fff;
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-size: 0.8rem;
+    }
+
+    .badge-chip-grey {
+        background: #e9ecef;
+        color: #495057;
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-size: 0.8rem;
+    }
+
+    /* TABLA STOCK */
+    .table-header-violeta {
+        background: linear-gradient(135deg, #f3e5ff 0%, #e5d2ff 100%);
+        color: #450050;
+    }
+
+    .table-footer-violeta {
+        background: #f8f0ff;
+    }
+
+    .table tbody tr:hover {
+        background-color: rgba(231, 83, 254, 0.03);
+    }
+
+    .stock-color-header {
+        background: linear-gradient(135deg, #ffafcc 0%, #ff8fab 100%);
+        color: #590d22;
+        padding: 0.6rem 1rem;
+    }
+
+    /* ESTADOS STOCK */
+    .badge-estado-agotado {
+        background: #dc3545;
+    }
+
+    .badge-estado-limitado {
+        background: #ffc107;
+        color: #212529;
+    }
+
+    .badge-estado-ok {
+        background: #c8b6ff;
+        color: #240046;
+    }
+
+    /* BOTONES VIOLETA (mismo estilo que en otras páginas) */
+    .btn-violeta {
+        background: linear-gradient(180deg, #450050 0%, #e753fe 100%) !important;
+        border: none !important;
+        color: #fff !important;
+        border-radius: 999px;
+        box-shadow: 0 4px 10px rgba(231, 83, 254, 0.35);
+        transition: all 0.2s ease;
+    }
+
+        .btn-violeta:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(231, 83, 254, 0.5);
+        }
+
+    .btn-outline-violeta {
+        border-radius: 999px;
+        color: #e753fe;
+        border-color: #e753fe;
+        background: transparent;
+        transition: all 0.2s ease;
+    }
+
+        .btn-outline-violeta:hover {
+            background: linear-gradient(180deg, rgba(69, 0, 80, 0.08) 0%, rgba(231, 83, 254, 0.12) 100%);
+            box-shadow: 0 4px 12px rgba(231, 83, 254, 0.3);
+            color: #450050;
+        }
+
+    /* CÍRCULOS DE COLOR */
+    .color-circle {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 2px solid #fff;
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+    }
+
+    /* ANIMACIÓN VARIANTES */
     .variantes-section {
-        animation: fadeIn 0.3s ease;
+        animation: fadeIn 0.25s ease;
     }
 
     @@keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
+        from
 
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    {
+        opacity: 0;
+        transform: translateY(-6px);
     }
 
-    /* Estilo para los badges de colores y tamaños */
-    .badge.bg-primary, .badge.bg-secondary {
-        font-size: 0.8rem;
-        padding: 4px 8px;
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 
-    /* Círculos de color */
-    .color-circle {
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        border: 2px solid #dee2e6;
-        display: inline-block;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
-    /* Mejorar la tabla */
-    .table tbody tr:hover {
-        background-color: rgba(0, 0, 0, 0.02);
+  
+    /*   ESTILOS VIOLETA PARA GESTIÓN DE STOCK POR COLOR   */
+    
+
+    .stock-card {
+        border-color: #c77dff !important;
+        background-color: #f5eaff !important; /* violeta ultra suave */
     }
+
+    .stock-card-header {
+        background: linear-gradient(135deg, #b983ff 0%, #9d4edd 100%) !important;
+        color: white !important;
+    }
+
+    .stock-alert {
+        background-color: #f3d9ff !important;
+        border-left: 4px solid #9d4edd !important;
+        color: #4a148c !important;
+    }
+
+
+
 </style>

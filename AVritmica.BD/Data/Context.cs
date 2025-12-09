@@ -22,6 +22,9 @@ namespace AVritmica.BD.Data
         public DbSet<StockMovimiento> StockMovimientos { get; set; }
         public DbSet<Usuario> Usuarios { get; set; }
 
+        public DbSet<Venta> Ventas { get; set; }
+        public DbSet<VentaDetalle> VentaDetalles { get; set; }
+
         public Context(DbContextOptions options) : base(options)
         {
         }
@@ -37,6 +40,55 @@ namespace AVritmica.BD.Data
             {
                 fk.DeleteBehavior = DeleteBehavior.Restrict;
             }
+
+            
+            // CONFIGURACIÓN DE VENTAS 
+
+            // Configurar VENTA
+            modelBuilder.Entity<Venta>(entity =>
+            {
+                // Índice único para número de venta
+                entity.HasIndex(v => v.NumeroVenta)
+                      .IsUnique();
+
+                // Configurar precisiones decimales para Venta
+                entity.Property(v => v.Subtotal)
+                      .HasColumnType("decimal(18,2)");
+
+                entity.Property(v => v.CostoEnvio)
+                      .HasColumnType("decimal(18,2)");
+
+                entity.Property(v => v.Total)
+                      .HasColumnType("decimal(18,2)");
+
+                // Configurar valores por defecto para Venta
+                entity.Property(v => v.Estado)
+                      .HasDefaultValue("Pendiente");
+
+                entity.Property(v => v.TipoEnvio)
+                      .HasDefaultValue("RetiroLocal");
+
+                entity.Property(v => v.MetodoPago)
+                      .HasDefaultValue("Pendiente");
+
+                entity.Property(v => v.Fecha)
+                      .HasDefaultValueSql("GETDATE()");
+            });
+
+            // Configurar VENTA DETALLE
+            modelBuilder.Entity<VentaDetalle>(entity =>
+            {
+                // Configurar precisiones decimales
+                entity.Property(d => d.PrecioUnitario)
+                      .HasColumnType("decimal(18,2)");
+
+                entity.Property(d => d.Subtotal)
+                      .HasColumnType("decimal(18,2)");
+
+                // Relación con Producto (ya está configurada por el Restrict global)
+                
+            });
+
 
             base.OnModelCreating(modelBuilder);
 

@@ -2,8 +2,11 @@
 @page "/catalogo/categoria/{CategoriaId:int}"
 @using AVritmica.BD.Data.Entity
 @using AVritmica.Client.Servicios
+@using AVritmica.Client.Servicios.Entidades
 @inject IProductoService ProductoService
 @inject ICategoriaService CategoriaService
+@inject ICarritoServicio CarritoService
+@inject ICarritoProductoServicio CarritoProductoService
 @inject NavigationManager Navigation
 
 <PageTitle>Avítmica - Catálogo</PageTitle>
@@ -47,6 +50,47 @@
                 </div>
             </div>
         </div>
+
+        <!-- Botón del Carrito - Responsive -->
+        <div class="position-absolute" style="top: 15px; right: 15px; z-index: 1000;">
+            <a class="btn position-relative p-1 p-sm-2 d-flex align-items-center carrito-btn"
+               href="/carrito"
+               title="Ver carrito"
+               style="background: rgba(69, 0, 80, 0.9);
+              color: white;
+              border: 1px solid rgba(231, 83, 254, 0.5);
+              border-radius: 8px;
+              transition: all 0.3s ease;">
+
+                <i class="fas fa-shopping-cart"></i>
+                <span class="d-none d-sm-inline ms-1" style="font-size: 0.9rem;">Carrito</span>
+
+                @if (cantidadEnCarrito > 0)
+                {
+                    <span class="ms-1 badge rounded-pill px-1 py-0"
+                          style="background: #e753fe;
+                             color: white;
+                             font-size: 0.7rem;">
+                        @cantidadEnCarrito
+                    </span>
+                }
+            </a>
+        </div>
+
+        <style>
+            .carrito-btn:hover {
+                transform: scale(1.05);
+                box-shadow: 0 6px 20px rgba(231, 83, 254, 0.4) !important;
+                background: rgba(69, 0, 80, 1) !important;
+            }
+
+            @@media (max-width: 768px) {
+                .carrito-btn {
+                    padding: 4px 6px !important;
+                    font-size: 0.8rem;
+                }
+            }
+        </style>
     </div>
 </div>
 
@@ -162,21 +206,7 @@
                                     <i class="fas fa-eye me-2"></i>Ver Detalles
                                 </button>
 
-                                @*@if (producto.Stock > 0)
-                                {
-                                    <button class="btn btn-violeta"
-                                            @onclick="() => AgregarAlCarrito(producto)"
-                                            style="background: linear-gradient(180deg, #450050 0%, #e753fe 100%); border: none;">
-                                        <i class="fas fa-cart-plus me-2"></i>Agregar al Carrito
-                                    </button>
-                                }
-                                else
-                                {
-                                    <button class="btn btn-secondary" disabled>
-                                        <i class="fas fa-ban me-2"></i>Sin Stock
-                                    </button>
-                                }*@
-
+                                
                             </div>
                         </div>
                     </div>
@@ -192,11 +222,14 @@
     private List<Producto> productos = new();
     private List<Categoria> categorias = new();
     private bool cargando = true;
+    private int cantidadEnCarrito = 0;
+    private int usuarioId = 1; // TODO: Cambiar por usuario real
 
     protected override async Task OnInitializedAsync()
     {
         await CargarCategorias();
         await CargarProductos();
+        await CargarCantidadCarrito();
     }
 
     protected override async Task OnParametersSetAsync()
@@ -287,6 +320,31 @@
         }
     }
 
+    private async Task CargarCantidadCarrito()
+    {
+        try
+        {
+            // Usar el NUEVO método ObtenerItemsCarrito()
+            var respuesta = await CarritoService.ObtenerItemsCarrito();
+
+            if (!respuesta.Error && respuesta.Respuesta != null)
+            {
+                cantidadEnCarrito = respuesta.Respuesta.Sum(i => i.Cantidad);
+                Console.WriteLine($"✓ Carrito: {cantidadEnCarrito} items");
+            }
+            else
+            {
+                cantidadEnCarrito = 0;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"✗ Error cargando carrito: {ex.Message}");
+            cantidadEnCarrito = 0;
+        }
+        StateHasChanged();
+    }
+
     private string GetShortDescription(string descripcion)
     {
         if (string.IsNullOrEmpty(descripcion))
@@ -303,10 +361,94 @@
         Navigation.NavigateTo($"/producto/detalle/{productoId}");
     }
 
-    private void AgregarAlCarrito(Producto producto)
+    private async Task AgregarAlCarrito(Producto producto)
     {
         Console.WriteLine($"Agregando '{producto.Nombre}' al carrito");
-        // TODO: Implementar lógica del carrito
+
+        try
+        {
+            // 1. Obtener o crear carrito activo
+            var respuestaCarrito = await CarritoService.GetCarritoActivo(usuarioId);
+            Carrito carrito;
+
+            if (!respuestaCarrito.Error && respuestaCarrito.Respuesta != null)
+            {
+                carrito = respuestaCarrito.Respuesta;
+                Console.WriteLine($"✓ Carrito activo encontrado: ID {carrito.Id}");
+            }
+            else
+            {
+                // Crear nuevo carrito
+                var nuevoCarrito = new Carrito
+                {
+                    UsuarioId = usuarioId,
+                    FechaCreacion = DateTime.Now,
+                    Estado = "Activo"
+                };
+
+                var respuestaNuevo = await CarritoService.Post(nuevoCarrito);
+
+                if (respuestaNuevo.Error)
+                {
+                    Console.WriteLine($"✗ Error creando carrito");
+                    return;
+                }
+
+                // Obtener el carrito recién creado
+                var respuestaCarritoNuevo = await CarritoService.GetCarritoActivo(usuarioId);
+                if (respuestaCarritoNuevo.Error || respuestaCarritoNuevo.Respuesta == null)
+                {
+                    Console.WriteLine($"✗ Error obteniendo carrito creado");
+                    return;
+                }
+
+                carrito = respuestaCarritoNuevo.Respuesta;
+                Console.WriteLine($"✓ Nuevo carrito creado: ID {carrito.Id}");
+            }
+
+            // 2. Verificar si el producto ya está en el carrito
+            var respuestaExistente = await CarritoProductoService.GetByCarritoAndProducto(carrito.Id, producto.Id);
+
+            if (!respuestaExistente.Error && respuestaExistente.Respuesta != null)
+            {
+                // Si ya existe, actualizar cantidad
+                var itemExistente = respuestaExistente.Respuesta;
+                var nuevaCantidad = itemExistente.Cantidad + 1;
+
+                if (nuevaCantidad > producto.Stock)
+                {
+                    Console.WriteLine($"✗ Stock insuficiente. Solo hay {producto.Stock} unidades");
+                    return;
+                }
+
+                await CarritoProductoService.ActualizarCantidad(itemExistente.Id, nuevaCantidad);
+                Console.WriteLine($"✓ Cantidad actualizada: {nuevaCantidad}");
+            }
+            else
+            {
+                // 3. Crear nuevo item en el carrito
+                var nuevoItem = new CarritoProducto
+                {
+                    CarritoId = carrito.Id,
+                    ProductoId = producto.Id,
+                    Cantidad = 1,
+                    PrecioUnitario = producto.Precio,
+                    Color = null,
+                    Tamaño = null
+                };
+
+                await CarritoProductoService.Post(nuevoItem);
+                Console.WriteLine($"✓ Nuevo item agregado al carrito");
+            }
+
+            // 4. Actualizar el contador y redirigir
+            await CargarCantidadCarrito();
+            Navigation.NavigateTo("/carrito");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error en AgregarAlCarrito: {ex.Message}");
+            Console.WriteLine($"❌ StackTrace: {ex.StackTrace}");
+        }
     }
 }
-

@@ -3,6 +3,12 @@
         <a class="navbar-brand" href="">
             <span class="bi bi-calculator-fill me-2"></span> AVritmica
         </a>
+
+        <!-- Botón del carrito agregado aquí -->
+        <a class="btn btn-link text-white me-2" href="carrito" title="Ver carrito">
+            <i class="bi bi-cart3 fs-5"></i>
+        </a>
+
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -20,6 +26,29 @@
                 </div>
             </NavLink>
         </div>
+
+        <!-- Catálogo -->
+        <div class="nav-item px-3">
+            <NavLink class="nav-link menu-item" href="catalogo">
+                <div class="menu-item-content">
+                    <span class="bi bi-shop menu-icon"></span>
+                    <span class="menu-text">Catálogo</span>
+                </div>
+            </NavLink>
+        </div>
+
+        <!-- Mi Carrito agregado aquí -->
+        <div class="nav-item px-3">
+            <NavLink class="nav-link menu-item" href="carrito">
+                <div class="menu-item-content">
+                    <span class="bi bi-cart3 menu-icon"></span>
+                    <span class="menu-text">Mi Carrito</span>
+                </div>
+            </NavLink>
+        </div>
+
+        <!-- Separador -->
+        <div class="nav-divider"></div>
 
         <!-- Gestión de Productos -->
         <div class="nav-item px-3">
@@ -122,23 +151,6 @@
                 </div>
             </NavLink>
         </div>
-
-        <!-- Separador -->
-        <div class="nav-divider"></div>
-
-        <!-- Catálogo -->
-        <div class="nav-item px-3">
-            <NavLink class="nav-link menu-item" href="catalogo">
-                <div class="menu-item-content">
-                    <span class="bi bi-shop menu-icon"></span>
-                    <span class="menu-text">Catálogo</span>
-                </div>
-            </NavLink>
-        </div>
-
-       
-      
-
 
     </nav>
 </div>

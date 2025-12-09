@@ -1,30 +1,35 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AVritmica.BD.Data.Entity
 {
-    [Index(nameof(CarritoId), Name = "IX_CarritoProductos_CarritoId")]
-    [Index(nameof(ProductoId), Name = "IX_CarritoProductos_ProductoId")]
-    [Index(nameof(CarritoId), nameof(ProductoId), IsUnique = true, Name = "IX_CarritoProductos_CarritoProducto")]
     public class CarritoProducto : EntityBase
     {
-        // Claves foráneas
+        // Claves foráneas (¡IMPORTANTE!)
+        [Required]
         public int CarritoId { get; set; }
-        public Carrito Carrito { get; set; }
 
+        [Required]
         public int ProductoId { get; set; }
-        public Producto Producto { get; set; }
 
+        // Propiedades
+        [Required]
+        [Range(1, int.MaxValue, ErrorMessage = "La cantidad debe ser mayor a 0")]
         public int Cantidad { get; set; }
 
+        [Required]
         [DataType(DataType.Currency)]
         [Column(TypeName = "decimal(18,2)")]
         public decimal PrecioUnitario { get; set; }
+
+        [MaxLength(50)]
+        public string? Color { get; set; }
+
+        [MaxLength(50)]
+        public string? Tamaño { get; set; }
+
+        // Propiedades de navegación (¡IMPORTANTE!)
+        public Carrito? Carrito { get; set; }
+        public Producto? Producto { get; set; }
     }
 }

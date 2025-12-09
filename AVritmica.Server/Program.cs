@@ -33,6 +33,8 @@ builder.Services.AddScoped<IProductoRepositorio, ProductoRepositorio>();
 builder.Services.AddScoped<IReportesRepositorio, ReportesRepositorio>();
 builder.Services.AddScoped<IStockMovimientoRepositorio, StockMovimientoRepositorio>();
 builder.Services.AddScoped<IUsuarioRepositorio, UsuarioRepositorio>();
+builder.Services.AddScoped<IVentaRepositorio, VentaRepositorio>();
+
 //--------------------------------------------------------------------
 //construcc�n de la aplicaci�n
 var app = builder.Build();
