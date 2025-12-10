@@ -3,15 +3,16 @@
 @using AVritmica.BD.Data.Entity
 @using AVritmica.Client.Servicios
 @using AVritmica.Client.Servicios.Entidades
+@using AVritmica.Shared.DTO
 @inject IProductoService ProductoService
 @inject ICategoriaService CategoriaService
-@inject ICarritoServicio CarritoService
+@inject ICarritoServicio CarritoServicio
 @inject ICarritoProductoServicio CarritoProductoService
 @inject NavigationManager Navigation
 
 <PageTitle>Avítmica - Catálogo</PageTitle>
 
-<!-- Banner Hero con TU gradiente violeta -->
+
 <div class="container-fluid bg-custom-gradient text-white py-5 mb-5">
     <div class="container">
         <div class="row align-items-center">
@@ -325,7 +326,7 @@
         try
         {
             // Usar el NUEVO método ObtenerItemsCarrito()
-            var respuesta = await CarritoService.ObtenerItemsCarrito();
+            var respuesta = await CarritoServicio.ObtenerItemsCarrito();
 
             if (!respuesta.Error && respuesta.Respuesta != null)
             {
@@ -361,7 +362,7 @@
         Navigation.NavigateTo($"/producto/detalle/{productoId}");
     }
 
-    private async Task AgregarAlCarrito(Producto producto)
+    /*private async Task AgregarAlCarrito(Producto producto)
     {
         Console.WriteLine($"Agregando '{producto.Nombre}' al carrito");
 
@@ -450,5 +451,5 @@
             Console.WriteLine($"❌ Error en AgregarAlCarrito: {ex.Message}");
             Console.WriteLine($"❌ StackTrace: {ex.StackTrace}");
         }
-    }
+    }*/
 }

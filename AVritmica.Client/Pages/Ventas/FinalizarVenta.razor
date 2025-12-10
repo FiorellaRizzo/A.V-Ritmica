@@ -5,6 +5,7 @@
 @inject HttpClient Http
 @inject IJSRuntime JS
 @inject NavigationManager Navigation
+@inject ICarritoServicio CarritoServicio
 
 <div class="container py-5">
 
@@ -362,8 +363,8 @@
 }
 
 @code {
-    
-    private const int usuarioIdTemporal = 1; // mismo criterio que en CarritoServicio
+    private const int usuarioIdTemporal = 1; // mismo criterio que CarritoServicio
+
     private const decimal COSTO_ENVIO_DOMICILIO = 8000m;
 
     private List<CarritoItemDTO> itemsCarrito = new();
@@ -394,7 +395,7 @@
     }
 
     // WhatsApp
-    private const string WhatsAppNumero = "3512276627"; // CAMBIÁ SI HACE FALTA
+    private const string WhatsAppNumero = "3512276627";
     private string WhatsAppUrlTransferencia =>
         $"https://wa.me/54{WhatsAppNumero}?text=Hola%20AVritmica,%20te%20env%C3%ADo%20el%20comprobante%20de%20la%20transferencia%20de%20mi%20compra.";
     private string WhatsAppUrlEfectivo =>
@@ -410,6 +411,7 @@
 
     private void OnValidationRequested(object? sender, ValidationRequestedEventArgs e)
     {
+        // Armo los detalles de la venta con lo que está en el carrito
         venta.Detalles = itemsCarrito.Select(i => new CrearVentaDetalleDTO
         {
             ProductoId = i.ProductoId,
@@ -426,18 +428,16 @@
 
         try
         {
-            var urlItems = $"api/Carritos/items?usuarioId={usuarioIdTemporal}";
-            var response = await Http.GetAsync(urlItems);
+            // Usamos el MISMO servicio de carrito que en Carrito.razor
+            var resp = await CarritoServicio.ObtenerItemsCarrito();
 
-            if (!response.IsSuccessStatusCode)
+            if (!resp.Error && resp.Respuesta != null)
             {
-                errorMensaje = $"Error al cargar el carrito ({response.StatusCode})";
-                itemsCarrito = new();
+                itemsCarrito = resp.Respuesta;
             }
             else
             {
-                var data = await response.Content.ReadFromJsonAsync<List<CarritoItemDTO>>();
-                itemsCarrito = data ?? new();
+                itemsCarrito = new List<CarritoItemDTO>();
             }
 
             subtotal = itemsCarrito.Sum(i => i.Cantidad * i.PrecioUnitario);
@@ -459,6 +459,7 @@
         catch (Exception ex)
         {
             errorMensaje = $"Error al cargar datos: {ex.Message}";
+            itemsCarrito = new List<CarritoItemDTO>();
         }
         finally
         {
@@ -497,6 +498,7 @@
 
         try
         {
+            // 1) Armar detalles de la venta desde el carrito
             venta.Detalles = itemsCarrito.Select(i => new CrearVentaDetalleDTO
             {
                 ProductoId = i.ProductoId,
@@ -504,8 +506,10 @@
                 PrecioUnitario = i.PrecioUnitario
             }).ToList();
 
+            // 2) Recalcular totales (subtotal + envío)
             RecalcularTotales();
 
+            // 3) Registrar la venta en el backend
             var response = await Http.PostAsJsonAsync("api/Ventas/crear-con-detalles", venta);
 
             if (!response.IsSuccessStatusCode)
@@ -515,14 +519,35 @@
                 return;
             }
 
-            mensajeOk = "La compra se registró correctamente en el sistema.";
-
-            var respVaciar = await Http.DeleteAsync($"api/Carritos/vaciar?usuarioId={usuarioIdTemporal}");
-            if (!respVaciar.IsSuccessStatusCode)
+            //  marcar el carrito activo como "confirmado" y guardar el total
+            var respCarrito = await CarritoServicio.GetCarritoActivo(usuarioIdTemporal);
+            if (!respCarrito.Error && respCarrito.Respuesta != null)
             {
-                await JS.InvokeVoidAsync("console.warn", "No se pudo vaciar el carrito después de la venta.");
+                var carrito = respCarrito.Respuesta;
+
+                // Armamos un texto de dirección/envío para guardar en el carrito
+                string direccionEnvioTexto;
+                if (venta.TipoEnvio == "EnvioDomicilio")
+                {
+                    direccionEnvioTexto =
+                        $"{venta.DireccionEnvio}, {venta.CiudadEnvio}, {venta.ProvinciaEnvio}, CP {venta.CodigoPostalEnvio}";
+                }
+                else
+                {
+                    direccionEnvioTexto = "Retiro en el local"; // o lo que uses en admin
+                }
+
+                await CarritoServicio.ConfirmarCarrito(
+                    carrito.Id,
+                    venta.Total,
+                    direccionEnvioTexto      // <-- tercer parámetro requerido
+                );
             }
 
+            //  NO vaciar el carrito aquí, para que en el admin sigan estando
+            //    los productos y el total de la compra.
+
+            mensajeOk = "La compra se registró correctamente en el sistema.";
             mostrarModalConfirmacion = true;
         }
         catch (Exception ex)

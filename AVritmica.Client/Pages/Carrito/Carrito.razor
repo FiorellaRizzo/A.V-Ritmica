@@ -1,7 +1,7 @@
 ﻿@page "/carrito"
 @using AVritmica.Shared.DTO
 @using AVritmica.Client.Servicios.Entidades
-@inject ICarritoServicio CarritoService
+@inject ICarritoServicio CarritoServicio
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 
@@ -287,22 +287,13 @@
                                 <i class="fas fa-shield-alt me-1"></i>
                                 Compra 100% segura |
                                 <i class="fas fa-truck me-1"></i>
-                                Envío gratis
+                               
                             </small>
                         </div>
                     </div>
                 </div>
 
-                <!-- Promoción -->
-                <div class="card mt-3 border-violet shadow-sm">
-                    <div class="card-body text-center">
-                        <i class="fas fa-gift fa-2x mb-2" style="color: #e753fe;"></i>
-                        <h6 class="text-violet">¡Envío Gratis!</h6>
-                        <small class="text-muted">
-                            En compras mayores a $50.000. Aprovecha esta oferta.
-                        </small>
-                    </div>
-                </div>
+                
             </div>
         </div>
     }
@@ -316,8 +307,8 @@
     private string? mensajeError;
     private string? mensajeExito;
 
-    // TODO: Reemplazar con usuario real cuando implementes autenticación
-    private int usuarioId = 1;
+    //  Reemplazar con usuario real cuando implementes autenticación
+    //private int usuarioId = 1;
 
     protected override async Task OnInitializedAsync()
     {
@@ -337,7 +328,7 @@
             Console.WriteLine("🛒 Cargando carrito...");
 
             // Llamar al servicio para obtener los items
-            var respuesta = await CarritoService.ObtenerItemsCarrito();
+            var respuesta = await CarritoServicio.ObtenerItemsCarrito();
 
             if (!respuesta.Error && respuesta.Respuesta != null)
             {
@@ -382,7 +373,7 @@
             // Ya no validamos con StockDisponible del cliente.
             // Dejamos que lo valide el backend y nos devuelva error si no hay stock.
 
-            var respuesta = await CarritoService.ActualizarCantidadItem(
+            var respuesta = await CarritoServicio.ActualizarCantidadItem(
                 item.ProductoId,
                 nuevaCantidad,
                 item.Color,
@@ -428,7 +419,7 @@
         {
             Console.WriteLine($"🗑️ Eliminando producto {item.ProductoId} del carrito");
 
-            var respuesta = await CarritoService.EliminarItem(
+            var respuesta = await CarritoServicio.EliminarItem(
                 item.ProductoId,
                 item.Color,
                 item.Tamaño);
@@ -471,7 +462,7 @@
         {
             Console.WriteLine("🧹 Vaciando carrito...");
 
-            var respuesta = await CarritoService.VaciarCarrito();
+            var respuesta = await CarritoServicio.VaciarCarrito();
 
             if (!respuesta.Error)
             {

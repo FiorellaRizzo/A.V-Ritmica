@@ -28,5 +28,7 @@ builder.Services.AddScoped<IConsultaServicio, ConsultaServicio>();
 builder.Services.AddScoped<IPagoServicio, PagoServicio>();
 builder.Services.AddScoped<IStockMovimientoServicio, StockMovimientoServicio>();
 builder.Services.AddScoped<IVentaServicio, VentaServicio>();
+builder.Services.AddScoped<ISesionUsuarioServicio, SesionUsuarioServicio>();
+
 
 await builder.Build().RunAsync();

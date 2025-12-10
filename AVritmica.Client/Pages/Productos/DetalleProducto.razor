@@ -4,9 +4,10 @@
 @using AVritmica.Client.Servicios.Entidades
 @using AVritmica.Shared.DTO
 @inject IProductoService ProductoService
-@inject ICarritoServicio CarritoService
+@inject ICarritoServicio CarritoServicio
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
+@inject ISesionUsuarioServicio SesionUsuarioServicio
 
 <PageTitle>Avítmica - Detalle del Producto</PageTitle>
 
@@ -572,7 +573,7 @@ else
     private string? mensajeExito;
 
     // TODO: Temporal - usar ID 1 hasta implementar login
-    private int usuarioIdTemporal = 1;
+    //private int usuarioIdTemporal = 1;
 
     protected override async Task OnInitializedAsync()
     {
@@ -702,7 +703,7 @@ else
     {
         try
         {
-            var respuesta = await CarritoService.ObtenerItemsCarrito();
+            var respuesta = await CarritoServicio.ObtenerItemsCarrito();
             if (!respuesta.Error && respuesta.Respuesta != null)
             {
                 cantidadEnCarrito = respuesta.Respuesta.Sum(i => i.Cantidad);
@@ -773,10 +774,18 @@ else
         {
             Console.WriteLine("📦 Agregando producto al carrito...");
 
-            // Crear DTO para agregar al carrito
+            // 1) Obtener el usuario actual desde el SelectorUsuario (localStorage)
+            var usuarioSeleccionadoId = await SesionUsuarioServicio.ObtenerUsuarioIdAsync();
+
+            // 2) Si no hay ninguno guardado, usar el usuario 1 como valor por defecto
+            var usuarioId = usuarioSeleccionadoId ?? 1;
+
+            Console.WriteLine($"- Usuario actual usado para la compra: {usuarioId}");
+
+            // 3) Crear DTO para agregar al carrito
             var itemDTO = new AgregarAlCarritoDTO
             {
-                UsuarioId = usuarioIdTemporal, // ← Usar el temporal
+                UsuarioId = usuarioId,   // ← AHORA usa el usuario del selector (o 1 por defecto)
                 ProductoId = producto.Id,
                 Cantidad = cantidad,
                 PrecioUnitario = producto.Precio,
@@ -784,7 +793,6 @@ else
                 Tamaño = producto.TieneVariantes ? tamanoSeleccionado : null
             };
 
-            Console.WriteLine($"- Usuario (temporal): {itemDTO.UsuarioId}");
             Console.WriteLine($"- Producto: {producto.Nombre}");
             if (producto.TieneVariantes)
             {
@@ -795,16 +803,16 @@ else
             Console.WriteLine($"- Precio unitario: ${itemDTO.PrecioUnitario:N2}");
             Console.WriteLine($"- Total: ${(producto.Precio * cantidad):N2}");
 
-            // Llamar al servicio - NOTA: usa "agregar-item" con minúscula
-            var respuesta = await CarritoService.AgregarItem(itemDTO);
+            // 4) Llamar al servicio
+            var respuesta = await CarritoServicio.AgregarItem(itemDTO);
 
             if (!respuesta.Error)
             {
                 mensajeExito = $"✅ {producto.Nombre} agregado al carrito correctamente";
                 Console.WriteLine("✅ Producto agregado al carrito exitosamente");
 
-                // Mostrar notificación
-                //await JS.InvokeVoidAsync("alert", mensajeExito);
+                // Actualizar contador del carrito
+                await CargarCantidadCarrito();
             }
             else
             {
@@ -824,6 +832,7 @@ else
         agregandoAlCarrito = false;
         StateHasChanged();
     }
+
 
     private void ComprarAhora()
     {

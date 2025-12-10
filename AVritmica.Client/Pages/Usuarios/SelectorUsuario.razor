@@ -1,0 +1,166 @@
+﻿@page "/usuarios/selector"
+@using AVritmica.BD.Data.Entity
+@inject HttpClient Http
+@inject ISesionUsuarioServicio SesionUsuarioServicio
+
+<div class="container py-4">
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-violet-gradient mb-0">
+            <i class="bi bi-person-check me-2"></i>
+            Seleccionar usuario actual
+        </h2>
+
+    </div>
+
+    @if (cargando)
+    {
+        <div class="text-center my-5">
+            <div class="spinner-border" style="color:#e753fe;width:3rem;height:3rem;" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="mt-3 text-muted">Cargando usuarios...</p>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(errorMensaje))
+    {
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-triangle me-2"></i> @errorMensaje
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-lg-7 col-md-9">
+                <div class="card shadow-sm border-violet">
+                    <div class="card-header bg-gradient-violet text-white">
+                        <strong>
+                            <i class="bi bi-person-lines-fill me-1"></i>
+                            Usuario en sesión (solo para pruebas)
+                        </strong>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted small">
+                            Elegí el <strong>usuario actual</strong>. Todos los carritos y ventas que hagas
+                            desde el catálogo se guardarán con este usuario.
+                        </p>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                Usuario actual
+                            </label>
+                            <select class="form-select shadow-sm" @onchange="OnUsuarioChanged" value="@usuarioSeleccionadoIdString">
+                                <option value="">-- Sin usuario seleccionado --</option>
+                                @foreach (var u in usuarios)
+                                {
+                                    <option value="@u.Id" selected="@(u.Id == usuarioSeleccionadoId)">
+                                        @($"{u.Id} - {u.Nombre} {u.Apellido} ({u.Email})")
+                                    </option>
+                                }
+                            </select>
+                        </div>
+
+                        @if (usuarioSeleccionado != null)
+                        {
+                            <div class="alert alert-info d-flex align-items-start">
+                                <i class="bi bi-info-circle-fill me-2 mt-1"></i>
+                                <div>
+                                    <div>
+                                        <strong>Usuario actual:</strong>
+                                        @usuarioSeleccionado.Nombre @usuarioSeleccionado.Apellido
+                                    </div>
+                                    <div>
+                                        <strong>Email:</strong> @usuarioSeleccionado.Email
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning d-flex align-items-start">
+                                <i class="bi bi-exclamation-triangle-fill me-2 mt-1"></i>
+                                <div>
+                                    No hay usuario seleccionado.
+                                    <br />
+                                    Si no elegís uno, el sistema usará el usuario por defecto (Id = 1).
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<Usuario> usuarios = new();
+    private bool cargando = true;
+    private string? errorMensaje;
+
+    private int? usuarioSeleccionadoId;
+    private string usuarioSeleccionadoIdString => usuarioSeleccionadoId?.ToString() ?? string.Empty;
+
+    private Usuario? usuarioSeleccionado =>
+        usuarioSeleccionadoId.HasValue
+            ? usuarios.FirstOrDefault(u => u.Id == usuarioSeleccionadoId.Value)
+            : null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            cargando = true;
+            errorMensaje = null;
+
+            usuarios = await Http.GetFromJsonAsync<List<Usuario>>("api/Usuarios") ?? new();
+
+            usuarioSeleccionadoId = await SesionUsuarioServicio.ObtenerUsuarioIdAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMensaje = $"Error al cargar usuarios: {ex.Message}";
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private async Task OnUsuarioChanged(ChangeEventArgs e)
+    {
+        var valor = e.Value?.ToString();
+
+        if (int.TryParse(valor, out var id))
+        {
+            usuarioSeleccionadoId = id;
+            await SesionUsuarioServicio.GuardarUsuarioIdAsync(id);
+        }
+        else
+        {
+            usuarioSeleccionadoId = null;
+            await SesionUsuarioServicio.BorrarUsuarioIdAsync();
+        }
+    }
+}
+
+<style>
+    .text-violet-gradient {
+        background: linear-gradient(180deg, #450050 0%, #e753fe 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .bg-violet {
+        background: linear-gradient(180deg, #450050 0%, #e753fe 100%) !important;
+    }
+
+    .border-violet {
+        border-color: rgba(231, 83, 254, 0.25) !important;
+    }
+
+    .bg-gradient-violet {
+        background: linear-gradient(180deg, #450050 0%, #e753fe 100%) !important;
+    }
+</style>
